@@ -1,0 +1,519 @@
+{
+  "name": "Code Summarizer",
+  "nodes": [
+    {
+      "parameters": {
+        "content": "## STEPS\n1. Read the code related mail -> trigger.\n2. Summarize the code using LLM.\n3. Generate the comments for the code.\n4. Step 2 and 3 to be done in parallel.\n5. Merge the outputs of step 2 and 3.\n6. Send the output to me as mail.",
+        "height": 240,
+        "width": 320,
+        "color": 5
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "position": [
+        -656,
+        -192
+      ],
+      "typeVersion": 1,
+      "id": "a6ab2cdf-e44f-4be7-a271-8554d90e5c65",
+      "name": "Sticky Note"
+    },
+    {
+      "parameters": {
+        "pollTimes": {
+          "item": [
+            {
+              "mode": "everyMinute"
+            }
+          ]
+        },
+        "simple": false,
+        "filters": {
+          "sender": "madhazia06@gmail.com"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.gmailTrigger",
+      "typeVersion": 1.4,
+      "position": [
+        -256,
+        -112
+      ],
+      "id": "45326565-09a1-41c5-8a29-5b59479966ba",
+      "name": "Gmail Trigger",
+      "credentials": {
+        "gmailOAuth2": {
+          "id": "AdSCqFJnqapImiv2",
+          "name": "Gmail account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "=Given the code below\nCode:\n{{ $json.text }}\ngenerate comments for the code so that i can understand what each line of the code does.\nNOTE: Do not modify the existing code lines at all. Just add the comments wherever required.",
+        "messages": {
+          "messageValues": [
+            {
+              "message": "You are a helpful assistant and know how to write code in python. You can help me to understand the code by adding comments to it."
+            }
+          ]
+        },
+        "batching": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.chainLlm",
+      "typeVersion": 1.9,
+      "position": [
+        -32,
+        -288
+      ],
+      "id": "6a8ed995-474e-4357-9337-a43bc16620fd",
+      "name": "Comments_Addition"
+    },
+    {
+      "parameters": {
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatGoogleGemini",
+      "typeVersion": 1.1,
+      "position": [
+        144,
+        -144
+      ],
+      "id": "dfdcce2f-94f6-446d-a9a4-4c50c34575c2",
+      "name": "Google Gemini Chat Model",
+      "credentials": {
+        "googlePalmApi": {
+          "id": "Ul7FuLuV8enK1o0o",
+          "name": "Google Gemini(PaLM) Api account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatGoogleGemini",
+      "typeVersion": 1.1,
+      "position": [
+        144,
+        192
+      ],
+      "id": "9fd38e5d-defd-4df2-b481-1a3eeb253af9",
+      "name": "Google Gemini Chat Model1",
+      "credentials": {
+        "googlePalmApi": {
+          "id": "Ul7FuLuV8enK1o0o",
+          "name": "Google Gemini(PaLM) Api account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "=Given the code below\nCode:\n{{ $json.text }}\ngenerate a sumary of what this code does in very simple language. Do note that the surmary should contain all the important details there are in the code so that I know what the code is about in a quick glance",
+        "messages": {
+          "messageValues": [
+            {
+              "message": "You are an expert in python code. You have the ability to summarize code in simple language and have the knack to cover important details in the summary."
+            }
+          ]
+        },
+        "batching": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.chainLlm",
+      "typeVersion": 1.9,
+      "position": [
+        -32,
+        48
+      ],
+      "id": "5f3a5aa7-09b6-4042-8cde-f5d0908fcf6e",
+      "name": "Code_Summary"
+    },
+    {
+      "parameters": {},
+      "type": "n8n-nodes-base.merge",
+      "typeVersion": 3.2,
+      "position": [
+        368,
+        -112
+      ],
+      "id": "1087991b-3265-4547-82bf-61fed04575ee",
+      "name": "Merge"
+    },
+    {
+      "parameters": {
+        "fieldsToAggregate": {
+          "fieldToAggregate": [
+            {
+              "fieldToAggregate": "text"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.aggregate",
+      "typeVersion": 1,
+      "position": [
+        544,
+        -112
+      ],
+      "id": "f0cf40e5-c62f-43dd-8a6e-601d8a637668",
+      "name": "Aggregate"
+    },
+    {
+      "parameters": {
+        "sendTo": "madhazia06@gmail.com",
+        "subject": "Code Summary and Comments",
+        "message": "={{ $json.text }}",
+        "options": {
+          "appendAttribution": false
+        }
+      },
+      "type": "n8n-nodes-base.gmail",
+      "typeVersion": 2.2,
+      "position": [
+        1168,
+        -112
+      ],
+      "id": "1cbf1847-066f-4bea-b7a9-8165ef67c20e",
+      "name": "Send a message",
+      "webhookId": "71685c17-bc5a-4d2c-aafd-b05902991648",
+      "credentials": {
+        "gmailOAuth2": {
+          "id": "AdSCqFJnqapImiv2",
+          "name": "Gmail account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "0cdb50af-89c0-44ea-a01d-0cfc70cedd5b",
+              "name": "Message",
+              "value": "=Code with Comments:\n{{ $json.text[0] }}\n\nCode Summary:\n{{ $json.text[1] }}",
+              "type": "string"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.5,
+      "position": [
+        704,
+        -112
+      ],
+      "id": "7498a13e-4f4e-4919-8c57-1070ef12fd07",
+      "name": "Edit Fields"
+    },
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "=Convert the message into html format.\nInclude proper code blocks wherever necessary. The code blocks should have syntax highlighting for the specific language used in the code.\n\nMessage:\n\n{{ $json.Message }}",
+        "messages": {
+          "messageValues": [
+            {
+              "message": "You can convert any message into html format that can be sent on mail to the user"
+            }
+          ]
+        },
+        "batching": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.chainLlm",
+      "typeVersion": 1.9,
+      "position": [
+        848,
+        -112
+      ],
+      "id": "1e497bde-4b97-4bdc-8940-cd6cb9283ba5",
+      "name": "Basic LLM Chain"
+    },
+    {
+      "parameters": {
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatGoogleGemini",
+      "typeVersion": 1.1,
+      "position": [
+        1008,
+        48
+      ],
+      "id": "09b2330f-1079-4a45-aeb3-82fda0927af8",
+      "name": "Google Gemini Chat Model2",
+      "credentials": {
+        "googlePalmApi": {
+          "id": "Ul7FuLuV8enK1o0o",
+          "name": "Google Gemini(PaLM) Api account"
+        }
+      }
+    }
+  ],
+  "pinData": {
+    "Gmail Trigger": [
+      {
+        "json": {
+          "id": "19fc2e3962b72b6d",
+          "threadId": "19fc2e38357aec41",
+          "labelIds": [
+            "IMPORTANT",
+            "SENT",
+            "INBOX"
+          ],
+          "sizeEstimate": 3697,
+          "headers": {
+            "mime-version": "MIME-Version: 1.0",
+            "date": "Date: Sun, 2 Aug 2026 19:32:02 +0500",
+            "message-id": "Message-ID: <CA+S-wrfb1RZWR0J0nvQPvRZQO2xLKSoRCFe+7fFnbuwKFy_nZQ@mail.gmail.com>",
+            "subject": "Subject: Code",
+            "from": "From: Madha Zia <madhazia06@gmail.com>",
+            "to": "To: Madha Zia <madhazia06@gmail.com>",
+            "content-type": "Content-Type: multipart/alternative; boundary=\"00000000000008e69706581149c7\""
+          },
+          "html": "<div dir=\"ltr\"><div>import numpy as np<br>import matplotlib.pyplot as plt<br>from sklearn.datasets import make_classification<br>from sklearn.model_selection import train_test_split<br>from sklearn.ensemble import RandomForestClassifier<br>from sklearn.metrics import (<br>    accuracy_score,<br>    precision_score,<br>    recall_score,<br>    f1_score,<br>    classification_report,<br>    confusion_matrix,<br>    ConfusionMatrixDisplay,<br>)<br><br>X, y = make_classification(<br>    n_samples=1000,<br>    n_features=10,<br>    n_informative=6,<br>    n_redundant=2,<br>    n_classes=2,<br>    random_state=42<br>)<br><br>X_train, X_test, y_train, y_test = train_test_split(<br>    X, y, test_size=0.2, random_state=42<br>)<br><br>model = RandomForestClassifier(<br>    n_estimators=100,<br>    random_state=42<br>)<br><br>model.fit(X_train, y_train)<br><br>y_pred = model.predict(X_test)<br><br>accuracy = accuracy_score(y_test, y_pred)<br>precision = precision_score(y_test, y_pred)<br>recall = recall_score(y_test, y_pred)<br>f1 = f1_score(y_test, y_pred)<br><br>print(&quot;Accuracy:&quot;, accuracy)<br>print(&quot;Precision:&quot;, precision)<br>print(&quot;Recall:&quot;, recall)<br>print(&quot;F1 Score:&quot;, f1)<br>print(&quot;\\nClassification Report:\\n&quot;)<br>print(classification_report(y_test, y_pred))<br><br>cm = confusion_matrix(y_test, y_pred)<br>disp = ConfusionMatrixDisplay(confusion_matrix=cm)<br>disp.plot()<br>plt.show()</div><div dir=\"ltr\" class=\"gmail_signature\" data-smartmail=\"gmail_signature\"><div dir=\"ltr\"><div><div></div></div></div></div></div>\n",
+          "text": "import numpy as np\nimport matplotlib.pyplot as plt\nfrom sklearn.datasets import make_classification\nfrom sklearn.model_selection import train_test_split\nfrom sklearn.ensemble import RandomForestClassifier\nfrom sklearn.metrics import (\n    accuracy_score,\n    precision_score,\n    recall_score,\n    f1_score,\n    classification_report,\n    confusion_matrix,\n    ConfusionMatrixDisplay,\n)\n\nX, y = make_classification(\n    n_samples=1000,\n    n_features=10,\n    n_informative=6,\n    n_redundant=2,\n    n_classes=2,\n    random_state=42\n)\n\nX_train, X_test, y_train, y_test = train_test_split(\n    X, y, test_size=0.2, random_state=42\n)\n\nmodel = RandomForestClassifier(\n    n_estimators=100,\n    random_state=42\n)\n\nmodel.fit(X_train, y_train)\n\ny_pred = model.predict(X_test)\n\naccuracy = accuracy_score(y_test, y_pred)\nprecision = precision_score(y_test, y_pred)\nrecall = recall_score(y_test, y_pred)\nf1 = f1_score(y_test, y_pred)\n\nprint(\"Accuracy:\", accuracy)\nprint(\"Precision:\", precision)\nprint(\"Recall:\", recall)\nprint(\"F1 Score:\", f1)\nprint(\"\\nClassification Report:\\n\")\nprint(classification_report(y_test, y_pred))\n\ncm = confusion_matrix(y_test, y_pred)\ndisp = ConfusionMatrixDisplay(confusion_matrix=cm)\ndisp.plot()\nplt.show()\n",
+          "textAsHtml": "<p>import numpy as np<br/>import matplotlib.pyplot as plt<br/>from sklearn.datasets import make_classification<br/>from sklearn.model_selection import train_test_split<br/>from sklearn.ensemble import RandomForestClassifier<br/>from sklearn.metrics import (<br/>    accuracy_score,<br/>    precision_score,<br/>    recall_score,<br/>    f1_score,<br/>    classification_report,<br/>    confusion_matrix,<br/>    ConfusionMatrixDisplay,<br/>)</p><p>X, y = make_classification(<br/>    n_samples=1000,<br/>    n_features=10,<br/>    n_informative=6,<br/>    n_redundant=2,<br/>    n_classes=2,<br/>    random_state=42<br/>)</p><p>X_train, X_test, y_train, y_test = train_test_split(<br/>    X, y, test_size=0.2, random_state=42<br/>)</p><p>model = RandomForestClassifier(<br/>    n_estimators=100,<br/>    random_state=42<br/>)</p><p><a href=\"http://model.fit\">model.fit</a>(X_train, y_train)</p><p>y_pred = model.predict(X_test)</p><p>accuracy = accuracy_score(y_test, y_pred)<br/>precision = precision_score(y_test, y_pred)<br/>recall = recall_score(y_test, y_pred)<br/>f1 = f1_score(y_test, y_pred)</p><p>print(&quot;Accuracy:&quot;, accuracy)<br/>print(&quot;Precision:&quot;, precision)<br/>print(&quot;Recall:&quot;, recall)<br/>print(&quot;F1 Score:&quot;, f1)<br/>print(&quot;\\nClassification Report:\\n&quot;)<br/>print(classification_report(y_test, y_pred))</p><p>cm = confusion_matrix(y_test, y_pred)<br/>disp = ConfusionMatrixDisplay(confusion_matrix=cm)<br/>disp.plot()<br/><a href=\"http://plt.show\">plt.show</a>()</p>",
+          "subject": "Code",
+          "date": "2026-08-02T14:32:02.000Z",
+          "to": {
+            "value": [
+              {
+                "address": "madhazia06@gmail.com",
+                "name": "Madha Zia"
+              }
+            ],
+            "html": "<span class=\"mp_address_group\"><span class=\"mp_address_name\">Madha Zia</span> &lt;<a href=\"mailto:madhazia06@gmail.com\" class=\"mp_address_email\">madhazia06@gmail.com</a>&gt;</span>",
+            "text": "\"Madha Zia\" <madhazia06@gmail.com>"
+          },
+          "from": {
+            "value": [
+              {
+                "address": "madhazia06@gmail.com",
+                "name": "Madha Zia"
+              }
+            ],
+            "html": "<span class=\"mp_address_group\"><span class=\"mp_address_name\">Madha Zia</span> &lt;<a href=\"mailto:madhazia06@gmail.com\" class=\"mp_address_email\">madhazia06@gmail.com</a>&gt;</span>",
+            "text": "\"Madha Zia\" <madhazia06@gmail.com>"
+          },
+          "messageId": "<CA+S-wrfb1RZWR0J0nvQPvRZQO2xLKSoRCFe+7fFnbuwKFy_nZQ@mail.gmail.com>"
+        },
+        "pairedItem": {
+          "item": 0
+        }
+      }
+    ],
+    "Comments_Addition": [
+      {
+        "json": {
+          "text": "```python\n# Import necessary libraries for data handling, visualization, and machine learning\nimport numpy as np\nimport matplotlib.pyplot as plt\nfrom sklearn.datasets import make_classification\nfrom sklearn.model_selection import train_test_split\nfrom sklearn.ensemble import RandomForestClassifier\nfrom sklearn.metrics import (\n    accuracy_score,\n    precision_score,\n    recall_score,\n    f1_score,\n    classification_report,\n    confusion_matrix,\n    ConfusionMatrixDisplay,\n)\n\n# Generate a synthetic binary classification dataset\nX, y = make_classification(\n    n_samples=1000,    # Total number of samples\n    n_features=10,     # Total number of input features\n    n_informative=6,   # Number of features that actually help in prediction\n    n_redundant=2,     # Number of features that are linear combinations of informative ones\n    n_classes=2,       # Number of target classes (binary: 0 and 1)\n    random_state=42    # Ensures reproducibility of the generated data\n)\n\n# Split the dataset into training and testing sets\n# 80% of data will be used for training, 20% for testing\nX_train, X_test, y_train, y_test = train_test_split(\n    X, y, test_size=0.2, random_state=42\n)\n\n# Initialize the Random Forest Classifier\nmodel = RandomForestClassifier(\n    n_estimators=100,  # Number of decision trees in the forest\n    random_state=42    # Ensures reproducibility of the model results\n)\n\n# Train (fit) the model using the training data\nmodel.fit(X_train, y_train)\n\n# Use the trained model to make predictions on the test data\ny_pred = model.predict(X_test)\n\n# Calculate various evaluation metrics to check model performance\naccuracy = accuracy_score(y_test, y_pred)      # Ratio of correctly predicted observations to total observations\nprecision = precision_score(y_test, y_pred)    # Ability of the classifier not to label a negative sample as positive\nrecall = recall_score(y_test, y_pred)          # Ability of the classifier to find all the positive samples\nf1 = f1_score(y_test, y_pred)                  # Weighted average of Precision and Recall\n\n# Print the calculated metrics to the console\nprint(\"Accuracy:\", accuracy)\nprint(\"Precision:\", precision)\nprint(\"Recall:\", recall)\nprint(\"F1 Score:\", f1)\n\n# Print a detailed classification report including precision, recall, and f1-score per class\nprint(\"\\nClassification Report:\\n\")\nprint(classification_report(y_test, y_pred))\n\n# Compute the confusion matrix to evaluate the accuracy of a classification\ncm = confusion_matrix(y_test, y_pred)\n\n# Create a visual display of the confusion matrix\ndisp = ConfusionMatrixDisplay(confusion_matrix=cm)\n\n# Plot the confusion matrix and display it using Matplotlib\ndisp.plot()\nplt.show()\n```"
+        },
+        "pairedItem": {
+          "item": 0
+        }
+      }
+    ],
+    "Code_Summary": [
+      {
+        "json": {
+          "text": "This code performs a complete **binary classification task** (sorting data into two categories) using a popular Machine Learning algorithm called **Random Forest**.\n\nHere is the breakdown of what happens in the code:\n\n1.  **Data Generation:** It creates a \"fake\" dataset of **1,000 samples**. Each sample has **10 features** (characteristics), where 6 are useful for the prediction and 2 are redundant.\n2.  **Data Splitting:** It splits the data into two groups: **80% for training** the model and **20% for testing** its accuracy later.\n3.  **Model Building:** It initializes a **Random Forest Classifier** (using 100 individual decision trees) and \"fits\" it, which means it learns the patterns from the training data.\n4.  **Prediction:** The model uses the patterns it learned to guess the categories of the 20% of data it hasn't seen before (the test set).\n5.  **Evaluation:** It calculates and prints several performance scores:\n    *   **Accuracy:** Overall correctness.\n    *   **Precision & Recall:** How well it handles positives vs. negatives.\n    *   **F1 Score:** A balance between Precision and Recall.\n    *   **Classification Report:** A detailed table of all the above stats.\n6.  **Visualization:** Finally, it generates a **Confusion Matrix plot**, which is a visual chart showing exactly how many items were correctly classified and which ones were mistaken for the other category."
+        },
+        "pairedItem": {
+          "item": 0
+        }
+      }
+    ],
+    "Aggregate": [
+      {
+        "json": {
+          "text": [
+            "```python\n# Import necessary libraries for data handling, visualization, and machine learning\nimport numpy as np\nimport matplotlib.pyplot as plt\nfrom sklearn.datasets import make_classification\nfrom sklearn.model_selection import train_test_split\nfrom sklearn.ensemble import RandomForestClassifier\nfrom sklearn.metrics import (\n    accuracy_score,\n    precision_score,\n    recall_score,\n    f1_score,\n    classification_report,\n    confusion_matrix,\n    ConfusionMatrixDisplay,\n)\n\n# Generate a synthetic binary classification dataset\nX, y = make_classification(\n    n_samples=1000,    # Total number of samples\n    n_features=10,     # Total number of input features\n    n_informative=6,   # Number of features that actually help in prediction\n    n_redundant=2,     # Number of features that are linear combinations of informative ones\n    n_classes=2,       # Number of target classes (binary: 0 and 1)\n    random_state=42    # Ensures reproducibility of the generated data\n)\n\n# Split the dataset into training and testing sets\n# 80% of data will be used for training, 20% for testing\nX_train, X_test, y_train, y_test = train_test_split(\n    X, y, test_size=0.2, random_state=42\n)\n\n# Initialize the Random Forest Classifier\nmodel = RandomForestClassifier(\n    n_estimators=100,  # Number of decision trees in the forest\n    random_state=42    # Ensures reproducibility of the model results\n)\n\n# Train (fit) the model using the training data\nmodel.fit(X_train, y_train)\n\n# Use the trained model to make predictions on the test data\ny_pred = model.predict(X_test)\n\n# Calculate various evaluation metrics to check model performance\naccuracy = accuracy_score(y_test, y_pred)      # Ratio of correctly predicted observations to total observations\nprecision = precision_score(y_test, y_pred)    # Ability of the classifier not to label a negative sample as positive\nrecall = recall_score(y_test, y_pred)          # Ability of the classifier to find all the positive samples\nf1 = f1_score(y_test, y_pred)                  # Weighted average of Precision and Recall\n\n# Print the calculated metrics to the console\nprint(\"Accuracy:\", accuracy)\nprint(\"Precision:\", precision)\nprint(\"Recall:\", recall)\nprint(\"F1 Score:\", f1)\n\n# Print a detailed classification report including precision, recall, and f1-score per class\nprint(\"\\nClassification Report:\\n\")\nprint(classification_report(y_test, y_pred))\n\n# Compute the confusion matrix to evaluate the accuracy of a classification\ncm = confusion_matrix(y_test, y_pred)\n\n# Create a visual display of the confusion matrix\ndisp = ConfusionMatrixDisplay(confusion_matrix=cm)\n\n# Plot the confusion matrix and display it using Matplotlib\ndisp.plot()\nplt.show()\n```",
+            "This code performs a complete **binary classification task** (sorting data into two categories) using a popular Machine Learning algorithm called **Random Forest**.\n\nHere is the breakdown of what happens in the code:\n\n1.  **Data Generation:** It creates a \"fake\" dataset of **1,000 samples**. Each sample has **10 features** (characteristics), where 6 are useful for the prediction and 2 are redundant.\n2.  **Data Splitting:** It splits the data into two groups: **80% for training** the model and **20% for testing** its accuracy later.\n3.  **Model Building:** It initializes a **Random Forest Classifier** (using 100 individual decision trees) and \"fits\" it, which means it learns the patterns from the training data.\n4.  **Prediction:** The model uses the patterns it learned to guess the categories of the 20% of data it hasn't seen before (the test set).\n5.  **Evaluation:** It calculates and prints several performance scores:\n    *   **Accuracy:** Overall correctness.\n    *   **Precision & Recall:** How well it handles positives vs. negatives.\n    *   **F1 Score:** A balance between Precision and Recall.\n    *   **Classification Report:** A detailed table of all the above stats.\n6.  **Visualization:** Finally, it generates a **Confusion Matrix plot**, which is a visual chart showing exactly how many items were correctly classified and which ones were mistaken for the other category."
+          ]
+        },
+        "pairedItem": [
+          {
+            "item": 0
+          },
+          {
+            "item": 1
+          }
+        ]
+      }
+    ],
+    "Merge": [
+      {
+        "json": {
+          "text": "```python\n# Import necessary libraries for data handling, visualization, and machine learning\nimport numpy as np\nimport matplotlib.pyplot as plt\nfrom sklearn.datasets import make_classification\nfrom sklearn.model_selection import train_test_split\nfrom sklearn.ensemble import RandomForestClassifier\nfrom sklearn.metrics import (\n    accuracy_score,\n    precision_score,\n    recall_score,\n    f1_score,\n    classification_report,\n    confusion_matrix,\n    ConfusionMatrixDisplay,\n)\n\n# Generate a synthetic binary classification dataset\nX, y = make_classification(\n    n_samples=1000,    # Total number of samples\n    n_features=10,     # Total number of input features\n    n_informative=6,   # Number of features that actually help in prediction\n    n_redundant=2,     # Number of features that are linear combinations of informative ones\n    n_classes=2,       # Number of target classes (binary: 0 and 1)\n    random_state=42    # Ensures reproducibility of the generated data\n)\n\n# Split the dataset into training and testing sets\n# 80% of data will be used for training, 20% for testing\nX_train, X_test, y_train, y_test = train_test_split(\n    X, y, test_size=0.2, random_state=42\n)\n\n# Initialize the Random Forest Classifier\nmodel = RandomForestClassifier(\n    n_estimators=100,  # Number of decision trees in the forest\n    random_state=42    # Ensures reproducibility of the model results\n)\n\n# Train (fit) the model using the training data\nmodel.fit(X_train, y_train)\n\n# Use the trained model to make predictions on the test data\ny_pred = model.predict(X_test)\n\n# Calculate various evaluation metrics to check model performance\naccuracy = accuracy_score(y_test, y_pred)      # Ratio of correctly predicted observations to total observations\nprecision = precision_score(y_test, y_pred)    # Ability of the classifier not to label a negative sample as positive\nrecall = recall_score(y_test, y_pred)          # Ability of the classifier to find all the positive samples\nf1 = f1_score(y_test, y_pred)                  # Weighted average of Precision and Recall\n\n# Print the calculated metrics to the console\nprint(\"Accuracy:\", accuracy)\nprint(\"Precision:\", precision)\nprint(\"Recall:\", recall)\nprint(\"F1 Score:\", f1)\n\n# Print a detailed classification report including precision, recall, and f1-score per class\nprint(\"\\nClassification Report:\\n\")\nprint(classification_report(y_test, y_pred))\n\n# Compute the confusion matrix to evaluate the accuracy of a classification\ncm = confusion_matrix(y_test, y_pred)\n\n# Create a visual display of the confusion matrix\ndisp = ConfusionMatrixDisplay(confusion_matrix=cm)\n\n# Plot the confusion matrix and display it using Matplotlib\ndisp.plot()\nplt.show()\n```"
+        },
+        "pairedItem": {
+          "item": 0
+        }
+      },
+      {
+        "json": {
+          "text": "This code performs a complete **binary classification task** (sorting data into two categories) using a popular Machine Learning algorithm called **Random Forest**.\n\nHere is the breakdown of what happens in the code:\n\n1.  **Data Generation:** It creates a \"fake\" dataset of **1,000 samples**. Each sample has **10 features** (characteristics), where 6 are useful for the prediction and 2 are redundant.\n2.  **Data Splitting:** It splits the data into two groups: **80% for training** the model and **20% for testing** its accuracy later.\n3.  **Model Building:** It initializes a **Random Forest Classifier** (using 100 individual decision trees) and \"fits\" it, which means it learns the patterns from the training data.\n4.  **Prediction:** The model uses the patterns it learned to guess the categories of the 20% of data it hasn't seen before (the test set).\n5.  **Evaluation:** It calculates and prints several performance scores:\n    *   **Accuracy:** Overall correctness.\n    *   **Precision & Recall:** How well it handles positives vs. negatives.\n    *   **F1 Score:** A balance between Precision and Recall.\n    *   **Classification Report:** A detailed table of all the above stats.\n6.  **Visualization:** Finally, it generates a **Confusion Matrix plot**, which is a visual chart showing exactly how many items were correctly classified and which ones were mistaken for the other category."
+        },
+        "pairedItem": {
+          "item": 0,
+          "input": 1
+        }
+      }
+    ],
+    "Edit Fields": [
+      {
+        "json": {
+          "Message": "Code with Comments:\n```python\n# Import necessary libraries for data handling, visualization, and machine learning\nimport numpy as np\nimport matplotlib.pyplot as plt\nfrom sklearn.datasets import make_classification\nfrom sklearn.model_selection import train_test_split\nfrom sklearn.ensemble import RandomForestClassifier\nfrom sklearn.metrics import (\n    accuracy_score,\n    precision_score,\n    recall_score,\n    f1_score,\n    classification_report,\n    confusion_matrix,\n    ConfusionMatrixDisplay,\n)\n\n# Generate a synthetic binary classification dataset\nX, y = make_classification(\n    n_samples=1000,    # Total number of samples\n    n_features=10,     # Total number of input features\n    n_informative=6,   # Number of features that actually help in prediction\n    n_redundant=2,     # Number of features that are linear combinations of informative ones\n    n_classes=2,       # Number of target classes (binary: 0 and 1)\n    random_state=42    # Ensures reproducibility of the generated data\n)\n\n# Split the dataset into training and testing sets\n# 80% of data will be used for training, 20% for testing\nX_train, X_test, y_train, y_test = train_test_split(\n    X, y, test_size=0.2, random_state=42\n)\n\n# Initialize the Random Forest Classifier\nmodel = RandomForestClassifier(\n    n_estimators=100,  # Number of decision trees in the forest\n    random_state=42    # Ensures reproducibility of the model results\n)\n\n# Train (fit) the model using the training data\nmodel.fit(X_train, y_train)\n\n# Use the trained model to make predictions on the test data\ny_pred = model.predict(X_test)\n\n# Calculate various evaluation metrics to check model performance\naccuracy = accuracy_score(y_test, y_pred)      # Ratio of correctly predicted observations to total observations\nprecision = precision_score(y_test, y_pred)    # Ability of the classifier not to label a negative sample as positive\nrecall = recall_score(y_test, y_pred)          # Ability of the classifier to find all the positive samples\nf1 = f1_score(y_test, y_pred)                  # Weighted average of Precision and Recall\n\n# Print the calculated metrics to the console\nprint(\"Accuracy:\", accuracy)\nprint(\"Precision:\", precision)\nprint(\"Recall:\", recall)\nprint(\"F1 Score:\", f1)\n\n# Print a detailed classification report including precision, recall, and f1-score per class\nprint(\"\\nClassification Report:\\n\")\nprint(classification_report(y_test, y_pred))\n\n# Compute the confusion matrix to evaluate the accuracy of a classification\ncm = confusion_matrix(y_test, y_pred)\n\n# Create a visual display of the confusion matrix\ndisp = ConfusionMatrixDisplay(confusion_matrix=cm)\n\n# Plot the confusion matrix and display it using Matplotlib\ndisp.plot()\nplt.show()\n```\n\nCode Summary:\nThis code performs a complete **binary classification task** (sorting data into two categories) using a popular Machine Learning algorithm called **Random Forest**.\n\nHere is the breakdown of what happens in the code:\n\n1.  **Data Generation:** It creates a \"fake\" dataset of **1,000 samples**. Each sample has **10 features** (characteristics), where 6 are useful for the prediction and 2 are redundant.\n2.  **Data Splitting:** It splits the data into two groups: **80% for training** the model and **20% for testing** its accuracy later.\n3.  **Model Building:** It initializes a **Random Forest Classifier** (using 100 individual decision trees) and \"fits\" it, which means it learns the patterns from the training data.\n4.  **Prediction:** The model uses the patterns it learned to guess the categories of the 20% of data it hasn't seen before (the test set).\n5.  **Evaluation:** It calculates and prints several performance scores:\n    *   **Accuracy:** Overall correctness.\n    *   **Precision & Recall:** How well it handles positives vs. negatives.\n    *   **F1 Score:** A balance between Precision and Recall.\n    *   **Classification Report:** A detailed table of all the above stats.\n6.  **Visualization:** Finally, it generates a **Confusion Matrix plot**, which is a visual chart showing exactly how many items were correctly classified and which ones were mistaken for the other category."
+        },
+        "pairedItem": {
+          "item": 0
+        }
+      }
+    ],
+    "Basic LLM Chain": [
+      {
+        "json": {
+          "text": "This is a complete HTML template optimized for email clients. It includes inline CSS for styling and manual syntax highlighting for the Python code to ensure it looks professional in any inbox.\n\n```html\n<!DOCTYPE html>\n<html lang=\"en\">\n<head>\n    <meta charset=\"UTF-8\">\n    <meta name=\"viewport\" content=\"width=device-width, initial-scale=1.0\">\n    <title>Python Classification Email</title>\n    <style>\n        body {\n            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;\n            line-height: 1.6;\n            color: #333;\n            max-width: 800px;\n            margin: 0 auto;\n            padding: 20px;\n            background-color: #f9f9f9;\n        }\n        .container {\n            background-color: #ffffff;\n            padding: 30px;\n            border-radius: 8px;\n            box-shadow: 0 2px 4px rgba(0,0,0,0.1);\n        }\n        h2 {\n            color: #2c3e50;\n            border-bottom: 2px solid #3498db;\n            padding-bottom: 10px;\n        }\n        .code-block {\n            background-color: #1e1e1e;\n            color: #d4d4d4;\n            padding: 20px;\n            border-radius: 6px;\n            font-family: 'Consolas', 'Monaco', 'Courier New', monospace;\n            font-size: 14px;\n            overflow-x: auto;\n            white-space: pre;\n            line-height: 1.5;\n            margin: 20px 0;\n        }\n        /* Syntax Highlighting Colors */\n        .comment { color: #6a9955; }\n        .keyword { color: #569cd6; }\n        .string { color: #ce9178; }\n        .function { color: #dcdcaa; }\n        .number { color: #b5cea8; }\n        \n        .summary-section {\n            background-color: #f0f7ff;\n            padding: 20px;\n            border-left: 5px solid #3498db;\n            border-radius: 4px;\n        }\n        ul {\n            padding-left: 20px;\n        }\n        li {\n            margin-bottom: 10px;\n        }\n        strong {\n            color: #2c3e50;\n        }\n    </style>\n</head>\n<body>\n    <div class=\"container\">\n        <h2>Code with Comments</h2>\n        \n        <div class=\"code-block\">\n<span class=\"comment\"># Import necessary libraries for data handling, visualization, and machine learning</span>\n<span class=\"keyword\">import</span> numpy <span class=\"keyword\">as</span> np\n<span class=\"keyword\">import</span> matplotlib.pyplot <span class=\"keyword\">as</span> plt\n<span class=\"keyword\">from</span> sklearn.datasets <span class=\"keyword\">import</span> make_classification\n<span class=\"keyword\">from</span> sklearn.model_selection <span class=\"keyword\">import</span> train_test_split\n<span class=\"keyword\">from</span> sklearn.ensemble <span class=\"keyword\">import</span> RandomForestClassifier\n<span class=\"keyword\">from</span> sklearn.metrics <span class=\"keyword\">import</span> (\n    accuracy_score,\n    precision_score,\n    recall_score,\n    f1_score,\n    classification_report,\n    confusion_matrix,\n    ConfusionMatrixDisplay,\n)\n\n<span class=\"comment\"># Generate a synthetic binary classification dataset</span>\nX, y = <span class=\"function\">make_classification</span>(\n    n_samples=<span class=\"number\">1000</span>,    <span class=\"comment\"># Total number of samples</span>\n    n_features=<span class=\"number\">10</span>,     <span class=\"comment\"># Total number of input features</span>\n    n_informative=<span class=\"number\">6</span>,   <span class=\"comment\"># Number of features that actually help in prediction</span>\n    n_redundant=<span class=\"number\">2</span>,     <span class=\"comment\"># Number of features that are linear combinations of informative ones</span>\n    n_classes=<span class=\"number\">2</span>,       <span class=\"comment\"># Number of target classes (binary: 0 and 1)</span>\n    random_state=<span class=\"number\">42</span>    <span class=\"comment\"># Ensures reproducibility of the generated data</span>\n)\n\n<span class=\"comment\"># Split the dataset into training and testing sets</span>\n<span class=\"comment\"># 80% of data will be used for training, 20% for testing</span>\nX_train, X_test, y_train, y_test = <span class=\"function\">train_test_split</span>(\n    X, y, test_size=<span class=\"number\">0.2</span>, random_state=<span class=\"number\">42</span>\n)\n\n<span class=\"comment\"># Initialize the Random Forest Classifier</span>\nmodel = <span class=\"function\">RandomForestClassifier</span>(\n    n_estimators=<span class=\"number\">100</span>,  <span class=\"comment\"># Number of decision trees in the forest</span>\n    random_state=<span class=\"number\">42</span>    <span class=\"comment\"># Ensures reproducibility of the model results</span>\n)\n\n<span class=\"comment\"># Train (fit) the model using the training data</span>\nmodel.<span class=\"function\">fit</span>(X_train, y_train)\n\n<span class=\"comment\"># Use the trained model to make predictions on the test data</span>\ny_pred = model.<span class=\"function\">predict</span>(X_test)\n\n<span class=\"comment\"># Calculate various evaluation metrics to check model performance</span>\naccuracy = <span class=\"function\">accuracy_score</span>(y_test, y_pred)      <span class=\"comment\"># Ratio of correctly predicted observations</span>\nprecision = <span class=\"function\">precision_score</span>(y_test, y_pred)    <span class=\"comment\"># Precision score</span>\nrecall = <span class=\"function\">recall_score</span>(y_test, y_pred)          <span class=\"comment\"># Recall score</span>\nf1 = <span class=\"function\">f1_score</span>(y_test, y_pred)                  <span class=\"comment\"># F1 score</span>\n\n<span class=\"comment\"># Print the calculated metrics to the console</span>\n<span class=\"function\">print</span>(<span class=\"string\">\"Accuracy:\"</span>, accuracy)\n<span class=\"function\">print</span>(<span class=\"string\">\"Precision:\"</span>, precision)\n<span class=\"function\">print</span>(<span class=\"string\">\"Recall:\"</span>, recall)\n<span class=\"function\">print</span>(<span class=\"string\">\"F1 Score:\"</span>, f1)\n\n<span class=\"comment\"># Print a detailed classification report</span>\n<span class=\"function\">print</span>(<span class=\"string\">\"\\nClassification Report:\\n\"</span>)\n<span class=\"function\">print</span>(<span class=\"function\">classification_report</span>(y_test, y_pred))\n\n<span class=\"comment\"># Compute and plot the confusion matrix</span>\ncm = <span class=\"function\">confusion_matrix</span>(y_test, y_pred)\ndisp = <span class=\"function\">ConfusionMatrixDisplay</span>(confusion_matrix=cm)\ndisp.<span class=\"function\">plot</span>()\nplt.<span class=\"function\">show</span>()</div>\n\n        <h2>Code Summary</h2>\n        <div class=\"summary-section\">\n            <p>This code performs a complete <strong>binary classification task</strong> (sorting data into two categories) using a popular Machine Learning algorithm called <strong>Random Forest</strong>.</p>\n            \n            <p>Here is the breakdown of what happens in the code:</p>\n            <ul>\n                <li><strong>1. Data Generation:</strong> It creates a \"fake\" dataset of <strong>1,000 samples</strong>. Each sample has 10 features, where 6 are useful for the prediction and 2 are redundant.</li>\n                <li><strong>2. Data Splitting:</strong> It splits the data into two groups: <strong>80% for training</strong> the model and <strong>20% for testing</strong> its accuracy later.</li>\n                <li><strong>3. Model Building:</strong> It initializes a <strong>Random Forest Classifier</strong> (using 100 individual decision trees) and \"fits\" it, meaning it learns patterns from the training data.</li>\n                <li><strong>4. Prediction:</strong> The model uses the patterns it learned to guess the categories of the 20% of data it hasn't seen before.</li>\n                <li><strong>5. Evaluation:</strong> It calculates and prints several performance scores:\n                    <ul>\n                        <li><em>Accuracy:</em> Overall correctness.</li>\n                        <li><em>Precision & Recall:</em> How well it handles positives vs. negatives.</li>\n                        <li><em>F1 Score:</em> A balance between Precision and Recall.</li>\n                    </ul>\n                </li>\n                <li><strong>6. Visualization:</strong> Finally, it generates a <strong>Confusion Matrix plot</strong>, which visually shows exactly how many items were correctly classified and which ones were mistaken.</li>\n            </ul>\n        </div>\n    </div>\n</body>\n</html>\n```"
+        },
+        "pairedItem": {
+          "item": 0
+        }
+      }
+    ]
+  },
+  "connections": {
+    "Gmail Trigger": {
+      "main": [
+        [
+          {
+            "node": "Comments_Addition",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "Code_Summary",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Google Gemini Chat Model": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "Comments_Addition",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Google Gemini Chat Model1": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "Code_Summary",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Code_Summary": {
+      "main": [
+        [
+          {
+            "node": "Merge",
+            "type": "main",
+            "index": 1
+          }
+        ]
+      ]
+    },
+    "Comments_Addition": {
+      "main": [
+        [
+          {
+            "node": "Merge",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Merge": {
+      "main": [
+        [
+          {
+            "node": "Aggregate",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Aggregate": {
+      "main": [
+        [
+          {
+            "node": "Edit Fields",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Send a message": {
+      "main": [
+        []
+      ]
+    },
+    "Edit Fields": {
+      "main": [
+        [
+          {
+            "node": "Basic LLM Chain",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Google Gemini Chat Model2": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "Basic LLM Chain",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Basic LLM Chain": {
+      "main": [
+        [
+          {
+            "node": "Send a message",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": false,
+  "settings": {
+    "executionOrder": "v1",
+    "binaryMode": "separate"
+  },
+  "versionId": "5b2ebc93-935f-4c3b-abb4-f7c9b9b901c2",
+  "meta": {
+    "templateCredsSetupCompleted": true,
+    "instanceId": "8f22964d0b8b72148f321f6f90750b85a19614511fef0df527cf6d7e9a0f6af3"
+  },
+  "nodeGroups": [],
+  "id": "s4T9EIh7XHMzLpSv",
+  "tags": []
+}
