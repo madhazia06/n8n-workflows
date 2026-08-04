@@ -1,0 +1,229 @@
+{
+  "name": "instagram-lead-generator",
+  "nodes": [
+    {
+      "parameters": {
+        "formTitle": "Instagram Lead Scraper",
+        "formDescription": "Get all the leads from Instagram directly to Airtable.",
+        "formFields": {
+          "values": [
+            {
+              "fieldLabel": "Who are you looking for?"
+            },
+            {
+              "fieldLabel": "Location"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.formTrigger",
+      "typeVersion": 2.6,
+      "position": [
+        -464,
+        -32
+      ],
+      "id": "1bbf1568-2f82-4cca-9567-918cf67bb1e5",
+      "name": "On form submission",
+      "webhookId": "25d55fb1-ee52-410d-b357-325728e643a2"
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "",
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={\n    \"chatGptSearch\": {\n        \"enableChatGpt\": false\n    },\n    \"copilotSearch\": {\n        \"enableCopilot\": false\n    },\n    \"focusOnPaidAds\": false,\n    \"forceExactMatch\": false,\n    \"geminiSearch\": {\n        \"enableGemini\": false\n    },\n    \"includeIcons\": false,\n    \"includeUnfilteredResults\": false,\n    \"maxPagesPerQuery\": 1,\n    \"maximumLeadsEnrichmentRecords\": 0,\n    \"mobileResults\": false,\n    \"perplexitySearch\": {\n        \"enablePerplexity\": false,\n        \"returnImages\": false,\n        \"returnRelatedQuestions\": false\n    },\n    \"queries\": \"site:instagram.com + {{ $json['Who are you looking for?'] }} {{ $json.Location }}\",\n    \"saveHtml\": false,\n    \"saveHtmlToKeyValueStore\": true,\n    \"verifyLeadsEnrichmentEmails\": false\n}",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.4,
+      "position": [
+        -256,
+        -32
+      ],
+      "id": "3fce55d9-09ce-4750-b39b-80f765776b42",
+      "name": "HTTP Request"
+    },
+    {
+      "parameters": {},
+      "type": "n8n-nodes-base.wait",
+      "typeVersion": 1.1,
+      "position": [
+        -48,
+        -32
+      ],
+      "id": "2ce3c461-f0f2-4c73-b836-10fe21dd4496",
+      "name": "Wait",
+      "webhookId": "2d40110f-9e34-47f2-adc5-fdf61c784619"
+    },
+    {
+      "parameters": {
+        "jsCode": "// Helper function to parse follower counts like \"22.7K\", \"1.2M\", etc.\nconst parseFollowers = (raw) => {\n  if (!raw || typeof raw !== 'string') return null;\n\n  const clean = raw.trim().toUpperCase();\n  const match = clean.match(/([\\d.,]+)\\s*([KMB]?)/);\n\n  if (!match) return null;\n\n  let number = parseFloat(match[1].replace(',', ''));\n  const multiplier = match[2];\n\n  if (isNaN(number)) return null;\n\n  switch (multiplier) {\n    case 'K': return Math.round(number * 1000);\n    case 'M': return Math.round(number * 1000000);\n    case 'B': return Math.round(number * 1000000000);\n    default: return Math.round(number);\n  }\n};\n\n// Main processing\nconst creators = $json[\"organicResults\"];\n\nreturn creators.map((creator) => {\n  const titleSplit = creator.title.split(\"(@\");\n  const name = titleSplit[0]?.trim() || \"Unknown\";\n  const handle = titleSplit[1]?.split(\")\")[0] || \"\";\n\n  const rawFollowers = creator.followersAmount || \"\";\n  const cleanFollowers = parseFollowers(rawFollowers);\n\n  return {\n    json: {\n      Name: name,\n      InstagramHandle: handle,\n      ProfileURL: creator.url || \"\",\n      Description: creator.description || \"\",\n      Followers: cleanFollowers,\n      ChannelName: creator.channelName || \"\",\n      PostType: creator.type || \"\",\n      Position: creator.position || null,\n    }\n  };\n});\n"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        160,
+        -32
+      ],
+      "id": "0d593700-6cb1-4dda-9e67-9aacecb0a02a",
+      "name": "Code in JavaScript"
+    },
+    {
+      "parameters": {
+        "operation": "append",
+        "documentId": {
+          "__rl": true,
+          "value": "1kPXPdW-qVoxdImn8IKFEnrjMaFQxpm-qerzSPr-2XRA",
+          "mode": "list",
+          "cachedResultName": "Lead Gens",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1kPXPdW-qVoxdImn8IKFEnrjMaFQxpm-qerzSPr-2XRA/edit?usp=drivesdk"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": "gid=0",
+          "mode": "list",
+          "cachedResultName": "Sheet1",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1kPXPdW-qVoxdImn8IKFEnrjMaFQxpm-qerzSPr-2XRA/edit#gid=0"
+        },
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "Name": "={{ $json.Name }}",
+            "Handle": "={{ $json.InstagramHandle }}",
+            "URL": "={{ $json.ProfileURL }}",
+            "Description": "={{ $json.Description }}",
+            "Followers": "={{ $json.Followers }}"
+          },
+          "matchingColumns": [],
+          "schema": [
+            {
+              "id": "Name",
+              "displayName": "Name",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Handle",
+              "displayName": "Handle",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "URL",
+              "displayName": "URL",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Description",
+              "displayName": "Description",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Followers",
+              "displayName": "Followers",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": false
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.7,
+      "position": [
+        368,
+        -32
+      ],
+      "id": "f346b5d3-50a5-4a7b-86df-9d1c4ad3f785",
+      "name": "Append row in sheet",
+      "credentials": {
+        "googleSheetsOAuth2Api": {
+          "id": "kVsngEfG30f662dB",
+          "name": "Google Sheets account"
+        }
+      }
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "On form submission": {
+      "main": [
+        [
+          {
+            "node": "HTTP Request",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "HTTP Request": {
+      "main": [
+        [
+          {
+            "node": "Wait",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Wait": {
+      "main": [
+        [
+          {
+            "node": "Code in JavaScript",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Code in JavaScript": {
+      "main": [
+        [
+          {
+            "node": "Append row in sheet",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": false,
+  "settings": {
+    "executionOrder": "v1",
+    "binaryMode": "separate",
+    "availableInMCP": false
+  },
+  "versionId": "dfad1b0d-92f7-45df-9a23-4348036383ce",
+  "meta": {
+    "templateCredsSetupCompleted": true,
+    "instanceId": "8f22964d0b8b72148f321f6f90750b85a19614511fef0df527cf6d7e9a0f6af3"
+  },
+  "nodeGroups": [],
+  "id": "CV0VQ3kFmxgXoLEc",
+  "tags": []
+}
