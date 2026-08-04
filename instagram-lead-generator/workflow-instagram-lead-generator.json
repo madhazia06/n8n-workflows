@@ -25,7 +25,7 @@
       ],
       "id": "1bbf1568-2f82-4cca-9567-918cf67bb1e5",
       "name": "On form submission",
-      "webhookId": "25d55fb1-ee52-410d-b357-325728e643a2"
+      "webhookId": "WEBHOOK ID"
     },
     {
       "parameters": {
@@ -75,17 +75,17 @@
         "operation": "append",
         "documentId": {
           "__rl": true,
-          "value": "1kPXPdW-qVoxdImn8IKFEnrjMaFQxpm-qerzSPr-2XRA",
+          "value": "GOOGLE-SHEET",
           "mode": "list",
           "cachedResultName": "Lead Gens",
-          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1kPXPdW-qVoxdImn8IKFEnrjMaFQxpm-qerzSPr-2XRA/edit?usp=drivesdk"
+          "cachedResultUrl": "GOOGLE-SHEET"
         },
         "sheetName": {
           "__rl": true,
           "value": "gid=0",
           "mode": "list",
           "cachedResultName": "Sheet1",
-          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1kPXPdW-qVoxdImn8IKFEnrjMaFQxpm-qerzSPr-2XRA/edit#gid=0"
+          "cachedResultUrl": "GOOGLE-SHEET"
         },
         "columns": {
           "mappingMode": "defineBelow",
@@ -157,11 +157,7 @@
       ],
       "id": "f346b5d3-50a5-4a7b-86df-9d1c4ad3f785",
       "name": "Append row in sheet",
-      "credentials": {
-        "googleSheetsOAuth2Api": {
-          "id": "kVsngEfG30f662dB",
-          "name": "Google Sheets account"
-        }
+      
       }
     }
   ],
@@ -221,7 +217,7 @@
   "versionId": "dfad1b0d-92f7-45df-9a23-4348036383ce",
   "meta": {
     "templateCredsSetupCompleted": true,
-    "instanceId": "8f22964d0b8b72148f321f6f90750b85a19614511fef0df527cf6d7e9a0f6af3"
+    "instanceId": ""
   },
   "nodeGroups": [],
   "id": "CV0VQ3kFmxgXoLEc",
