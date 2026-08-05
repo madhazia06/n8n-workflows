@@ -1,0 +1,2673 @@
+{
+  "name": "workflow-kpi-analysis",
+  "nodes": [
+    {
+      "parameters": {
+        "rule": {
+          "interval": [
+            {
+              "field": "weeks",
+              "triggerAtDay": [
+                1
+              ],
+              "triggerAtHour": 7
+            }
+          ]
+        }
+      },
+      "type": "n8n-nodes-base.scheduleTrigger",
+      "typeVersion": 1.3,
+      "position": [
+        -560,
+        80
+      ],
+      "id": "5d1f4fd0-4717-4754-abfa-acb224ddb40f",
+      "name": "Schedule Trigger"
+    },
+    {
+      "parameters": {
+        "documentId": {
+          "__rl": true,
+          "value": "",
+          "mode": "list",
+          "cachedResultName": "Fact_Sales",
+          "cachedResultUrl": "YOUR_FACT_SALES_SHEET_ID"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": "gid=0",
+          "mode": "list",
+          "cachedResultName": "Sheet1",
+          "cachedResultUrl": ""
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.7,
+      "position": [
+        -352,
+        -240
+      ],
+      "id": "79a1cf1f-451f-454b-bf48-9173d2cfdb92",
+      "name": "Fact_Sales",
+      "credentials": {
+        "googleSheetsOAuth2Api": {
+          "id": "",
+          "name": "Google Sheets account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "documentId": {
+          "__rl": true,
+          "value": "",
+          "mode": "list",
+          "cachedResultName": "Dim_Date",
+          "cachedResultUrl": ""
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": "gid=0",
+          "mode": "list",
+          "cachedResultName": "Sheet1",
+          "cachedResultUrl": ""
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.7,
+      "position": [
+        -352,
+        -80
+      ],
+      "id": "f1527c21-fa4e-458e-8085-4b3358a60d24",
+      "name": "Dim_Date",
+      "credentials": {
+        "googleSheetsOAuth2Api": {
+          "id": "",
+          "name": "Google Sheets account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "documentId": {
+          "__rl": true,
+          "value": "",
+          "mode": "list",
+          "cachedResultName": "Dim_Customer",
+          "cachedResultUrl": ""
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": "gid=0",
+          "mode": "list",
+          "cachedResultName": "Sheet1",
+          "cachedResultUrl": ""
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.7,
+      "position": [
+        -352,
+        80
+      ],
+      "id": "1739329d-e3c3-4990-82a1-7bdae2ada351",
+      "name": "Dim_Customer",
+      "credentials": {
+        "googleSheetsOAuth2Api": {
+          "id": "",
+          "name": "Google Sheets account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "documentId": {
+          "__rl": true,
+          "value": "",
+          "mode": "list",
+          "cachedResultName": "Dim_Product",
+          "cachedResultUrl": ""
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": "gid=0",
+          "mode": "list",
+          "cachedResultName": "Sheet1",
+          "cachedResultUrl": ""
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.7,
+      "position": [
+        -352,
+        240
+      ],
+      "id": "e4455928-dac5-4f21-81aa-50c8c7a3eb60",
+      "name": "Dim_Product",
+      "credentials": {
+        "googleSheetsOAuth2Api": {
+          "id": "",
+          "name": "Google Sheets account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "documentId": {
+          "__rl": true,
+          "value": "",
+          "mode": "list",
+          "cachedResultName": "Dim_Region",
+          "cachedResultUrl": ""
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": "gid=0",
+          "mode": "list",
+          "cachedResultName": "Sheet1",
+          "cachedResultUrl": ""
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.7,
+      "position": [
+        -352,
+        400
+      ],
+      "id": "be37a85b-4682-43e6-96f2-770ac235e7f6",
+      "name": "Dim_Region",
+      "credentials": {
+        "googleSheetsOAuth2Api": {
+          "id": "",
+          "name": "Google Sheets account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "numberInputs": 5
+      },
+      "type": "n8n-nodes-base.merge",
+      "typeVersion": 3.2,
+      "position": [
+        -64,
+        32
+      ],
+      "id": "4df921d0-0f8f-4d6c-9210-d14f6645e75d",
+      "name": "Merge"
+    },
+    {
+      "parameters": {
+        "jsCode": "// Get all items from merged sheets\nconst items = $input.all();\nconst sales = items.map(i => i.json);\n\n// Filter only Fact_Sales rows (they have OrderID)\nconst factSales = sales.filter(r => r.OrderID);\n\n// ── BASIC METRICS ──────────────────────────────────────────\nconst totalRevenue = factSales.reduce((s, r) => s + (parseFloat(r.Revenue) || 0), 0);\nconst totalProfit  = factSales.reduce((s, r) => s + (parseFloat(r.Profit) || 0), 0);\nconst totalOrders  = factSales.length;\nconst totalQty     = factSales.reduce((s, r) => s + (parseInt(r.Quantity) || 0), 0);\nconst profitMargin = totalRevenue ? ((totalProfit / totalRevenue) * 100).toFixed(2) : 0;\nconst avgOrderVal  = totalOrders  ? (totalRevenue / totalOrders).toFixed(2) : 0;\n\n// ── REVENUE BY PRODUCT ─────────────────────────────────────\nconst byProduct = {};\nfactSales.forEach(r => {\n  const key = r.Product || 'Unknown';\n  byProduct[key] = (byProduct[key] || 0) + (parseFloat(r.Revenue) || 0);\n});\nconst byProductSorted = Object.entries(byProduct).sort((a, b) => b[1] - a[1]);\nconst topProduct    = byProductSorted[0]?.[0] || 'N/A';\nconst topProductRev = byProductSorted[0]?.[1] || 0;\n\n// ── REVENUE BY CUSTOMER ────────────────────────────────────\nconst byCustomer = {};\nfactSales.forEach(r => {\n  const key = r.Customer || 'Unknown';\n  byCustomer[key] = (byCustomer[key] || 0) + (parseFloat(r.Revenue) || 0);\n});\nconst byCustomerSorted = Object.entries(byCustomer).sort((a, b) => b[1] - a[1]);\nconst topCustomer    = byCustomerSorted[0]?.[0] || 'N/A';\nconst topCustomerRev = byCustomerSorted[0]?.[1] || 0;\n\n// ── REVENUE BY REGION ──────────────────────────────────────\nconst byRegion = {};\nfactSales.forEach(r => {\n  const key = r.Region || 'Unknown';\n  byRegion[key] = (byRegion[key] || 0) + (parseFloat(r.Revenue) || 0);\n});\nconst byRegionSorted = Object.entries(byRegion).sort((a, b) => b[1] - a[1]);\nconst topRegion    = byRegionSorted[0]?.[0] || 'N/A';\nconst topRegionRev = byRegionSorted[0]?.[1] || 0;\n\n// ── REVENUE BY MONTH ───────────────────────────────────────\nconst byMonth = {};\nfactSales.forEach(r => {\n  const dateStr = r.Date || '';\n  let label = 'Unknown';\n  try {\n    const d = new Date(dateStr);\n    label = d.toLocaleString('default', { month: 'long', year: 'numeric' });\n  } catch(e) {}\n  byMonth[label] = (byMonth[label] || 0) + (parseFloat(r.Revenue) || 0);\n});\n\n// ── REVENUE BY QUARTER ─────────────────────────────────────\nconst byQuarter = {};\nfactSales.forEach(r => {\n  const dateStr = r.Date || '';\n  let label = 'Unknown';\n  try {\n    const d = new Date(dateStr);\n    const q = Math.floor(d.getMonth() / 3) + 1;\n    label = `Q${q} ${d.getFullYear()}`;\n  } catch(e) {}\n  byQuarter[label] = (byQuarter[label] || 0) + (parseFloat(r.Revenue) || 0);\n});\n\n// ── BEST & WORST MONTH ─────────────────────────────────────\nconst monthEntries = Object.entries(byMonth);\nconst bestMonth  = monthEntries.length ? monthEntries.reduce((a, b) => a[1] > b[1] ? a : b)[0] : 'N/A';\nconst worstMonth = monthEntries.length ? monthEntries.reduce((a, b) => a[1] < b[1] ? a : b)[0] : 'N/A';\n\n// ── MOM GROWTH (last 2 months) ─────────────────────────────\nconst monthList = monthEntries;\nlet momGrowth = 0;\nif (monthList.length >= 2) {\n  const prevRev = monthList[monthList.length - 2][1];\n  const currRev = monthList[monthList.length - 1][1];\n  momGrowth = prevRev ? (((currRev - prevRev) / prevRev) * 100).toFixed(2) : 0;\n}\n\n// ── TOP 3 PRODUCTS TABLE ───────────────────────────────────\nconst topProductsTable = byProductSorted.slice(0, 3).map(([product, revenue]) => ({\n  product,\n  revenue: revenue.toFixed(2)\n}));\n\n// ── REGION TABLE ───────────────────────────────────────────\nconst regionTable = byRegionSorted.map(([region, revenue]) => ({\n  region,\n  revenue: revenue.toFixed(2)\n}));\n\n// ── RETURN ─────────────────────────────────────────────────\nreturn [{\n  json: {\n    total_revenue:      parseFloat(totalRevenue.toFixed(2)),\n    total_profit:       parseFloat(totalProfit.toFixed(2)),\n    total_orders:       totalOrders,\n    total_quantity:     totalQty,\n    profit_margin:      parseFloat(profitMargin),\n    avg_order_value:    parseFloat(avgOrderVal),\n    top_product:        topProduct,\n    top_product_rev:    parseFloat(topProductRev.toFixed(2)),\n    top_customer:       topCustomer,\n    top_customer_rev:   parseFloat(topCustomerRev.toFixed(2)),\n    top_region:         topRegion,\n    top_region_rev:     parseFloat(topRegionRev.toFixed(2)),\n    best_month:         bestMonth,\n    worst_month:        worstMonth,\n    mom_growth:         parseFloat(momGrowth),\n    monthly_trend:      JSON.stringify(byMonth),\n    top_products_table: JSON.stringify(topProductsTable),\n    region_table:       JSON.stringify(regionTable),\n    by_quarter:         JSON.stringify(byQuarter),\n    report_generated:   new Date().toISOString()\n  }\n}];"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        144,
+        80
+      ],
+      "id": "57fde6d3-f5ee-4a46-99f3-a28f18034ccd",
+      "name": "Dax Calculation"
+    },
+    {
+      "parameters": {
+        "amount": 2
+      },
+      "type": "n8n-nodes-base.wait",
+      "typeVersion": 1.1,
+      "position": [
+        352,
+        80
+      ],
+      "id": "26970794-b33e-402a-813b-06de955e899a",
+      "name": "Wait",
+      "webhookId": ""
+    },
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "=Generate a complete Weekly KPI Report HTML email using this data:\n\nREVENUE & PROFIT:\n- Total Revenue: ₨ {{ $json.total_revenue }}\n- Total Profit: ₨ {{ $json.total_profit }}\n- Profit Margin: {{ $json.profit_margin }}%\n- Avg Order Value: ₨ {{ $json.avg_order_value }}\n- Total Orders: {{ $json.total_orders }}\n- Total Quantity Sold: {{ $json.total_quantity }}\n\nGROWTH:\n- MoM Growth: {{ $json.mom_growth }}%\n- Best Month: {{ $json.best_month }}\n- Worst Month: {{ $json.worst_month }}\n\nTOP PERFORMERS:\n- Top Product: {{ $json.top_product }} (₨ {{ $json.top_product_rev }})\n- Top Customer: {{ $json.top_customer }} (₨ {{ $json.top_customer_rev }})\n- Top Region: {{ $json.top_region }} (₨ {{ $json.top_region_rev }})\n\nPRODUCT BREAKDOWN: {{ $json.top_products_table }}\nREGION BREAKDOWN: {{ $json.region_table }}\nQUARTERLY BREAKDOWN: {{ $json.by_quarter }}\nMONTHLY TREND: {{ $json.monthly_trend }}\n\nReport Date: {{ $json.report_generated }}\n\nGenerate the full HTML report now.",
+        "messages": {
+          "messageValues": [
+            {
+              "message": "You are a senior data analyst and report writer. Your job is to generate professional, visually rich HTML email reports from KPI data.  Rules: - Output ONLY valid HTML. No markdown, no code fences, no explanations. - Use inline CSS only (no external stylesheets). - Use a clean professional design: dark header (#1a1a2e), white body, colored metric cards. - All currency values are in Pakistani Rupees (₨). - Always include: Executive Summary, KPI Cards, Monthly Trend, Top Products, Top Regions, AI Recommendations. - Write in a confident, professional analyst tone. - Never leave placeholder text like [INSERT DATA HERE]."
+            }
+          ]
+        },
+        "batching": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.chainLlm",
+      "typeVersion": 1.9,
+      "position": [
+        560,
+        80
+      ],
+      "id": "88396b7e-af27-47df-bdde-3178931c394e",
+      "name": "Basic LLM Chain"
+    },
+    {
+      "parameters": {
+        "model": "llama-3.3-70b-versatile",
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatGroq",
+      "typeVersion": 1,
+      "position": [
+        560,
+        256
+      ],
+      "id": "2db95449-1af4-4e3e-b642-6531df7999cf",
+      "name": "Groq Chat Model",
+      "credentials": {
+        "groqApi": {
+          "id": "",
+          "name": "Groq account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "jsCode": "// Extracts clean HTML from Groq/OpenAI response\nconst items = $input.all();\nconst raw = items[0].json;\n\n// n8n surfaces Groq response in different places depending on node type\nlet htmlReport =\n  raw?.message?.content ||\n  raw?.text ||\n  raw?.content ||\n  JSON.stringify(raw);\n\n// Strip markdown code fences if model wrapped output in ```html ... ```\nif (typeof htmlReport === 'string' && htmlReport.includes('```')) {\n  htmlReport = htmlReport\n    .split('\\n')\n    .filter(line => !line.trim().startsWith('```'))\n    .join('\\n')\n    .trim();\n}\n\nreturn [{ json: { html_report: htmlReport } }];"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        912,
+        80
+      ],
+      "id": "4fe6f8a8-719f-4741-be68-4af61f2d0b64",
+      "name": "Code in JavaScript"
+    },
+    {
+      "parameters": {
+        "sendTo": "user@gmail.com",
+        "subject": "=Weekly KPI Report - {{ $now.format('MMMM DD, YYYY') }}",
+        "message": "={{ $json.html_report }}",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.gmail",
+      "typeVersion": 2.2,
+      "position": [
+        1120,
+        80
+      ],
+      "id": "a18b832a-72aa-4c88-a874-72ff11080e7a",
+      "name": "Send a message",
+      "webhookId": "",
+      "credentials": {
+        "gmailOAuth2": {
+          "id": "",
+          "name": "Gmail account"
+        }
+      }
+    }
+  ],
+  "pinData": {
+    "Schedule Trigger": [
+      {
+        "json": {
+          "timestamp": "2026-08-04T23:16:55.027+05:00",
+          "Readable date": "August 4th 2026, 11:16:55 pm",
+          "Readable time": "11:16:55 pm",
+          "Day of week": "Tuesday",
+          "Year": "2026",
+          "Month": "August",
+          "Day of month": "04",
+          "Hour": "23",
+          "Minute": "16",
+          "Second": "55",
+          "Timezone": "Asia/Karachi (UTC+05:00)"
+        },
+        "pairedItem": {
+          "item": 0
+        }
+      }
+    ],
+    "Merge": [
+      {
+        "json": {
+          "row_number": 2,
+          "OrderID": "ORD001",
+          "Date": "2024-01-05",
+          "Product": "Laptop Pro",
+          "Customer": "Saad Khan",
+          "Region": "North",
+          "Revenue": 250000,
+          "Profit": 62500,
+          "Quantity": 2
+        },
+        "pairedItem": {
+          "item": 0
+        }
+      },
+      {
+        "json": {
+          "row_number": 3,
+          "OrderID": "ORD002",
+          "Date": "2024-01-12",
+          "Product": "Office Chair",
+          "Customer": "Ayesha Ali",
+          "Region": "South",
+          "Revenue": 45000,
+          "Profit": 11250,
+          "Quantity": 5
+        },
+        "pairedItem": {
+          "item": 1
+        }
+      },
+      {
+        "json": {
+          "row_number": 4,
+          "OrderID": "ORD003",
+          "Date": "2024-01-18",
+          "Product": "Laptop Pro",
+          "Customer": "Bilal Ahmed",
+          "Region": "East",
+          "Revenue": 125000,
+          "Profit": 31250,
+          "Quantity": 1
+        },
+        "pairedItem": {
+          "item": 2
+        }
+      },
+      {
+        "json": {
+          "row_number": 5,
+          "OrderID": "ORD004",
+          "Date": "2024-02-02",
+          "Product": "Wireless Mouse",
+          "Customer": "Sara Malik",
+          "Region": "West",
+          "Revenue": 12000,
+          "Profit": 3000,
+          "Quantity": 10
+        },
+        "pairedItem": {
+          "item": 3
+        }
+      },
+      {
+        "json": {
+          "row_number": 6,
+          "OrderID": "ORD005",
+          "Date": "2024-02-14",
+          "Product": "Standing Desk",
+          "Customer": "Saad Khan",
+          "Region": "North",
+          "Revenue": 180000,
+          "Profit": 45000,
+          "Quantity": 2
+        },
+        "pairedItem": {
+          "item": 4
+        }
+      },
+      {
+        "json": {
+          "row_number": 7,
+          "OrderID": "ORD006",
+          "Date": "2024-02-20",
+          "Product": "Monitor 27\"",
+          "Customer": "Zara Hussain",
+          "Region": "South",
+          "Revenue": 95000,
+          "Profit": 23750,
+          "Quantity": 3
+        },
+        "pairedItem": {
+          "item": 5
+        }
+      },
+      {
+        "json": {
+          "row_number": 8,
+          "OrderID": "ORD007",
+          "Date": "2024-03-01",
+          "Product": "Laptop Pro",
+          "Customer": "Ayesha Ali",
+          "Region": "East",
+          "Revenue": 250000,
+          "Profit": 62500,
+          "Quantity": 2
+        },
+        "pairedItem": {
+          "item": 6
+        }
+      },
+      {
+        "json": {
+          "row_number": 9,
+          "OrderID": "ORD008",
+          "Date": "2024-03-10",
+          "Product": "Keyboard Mechanical",
+          "Customer": "Bilal Ahmed",
+          "Region": "West",
+          "Revenue": 22000,
+          "Profit": 5500,
+          "Quantity": 4
+        },
+        "pairedItem": {
+          "item": 7
+        }
+      },
+      {
+        "json": {
+          "row_number": 10,
+          "OrderID": "ORD009",
+          "Date": "2024-03-16",
+          "Product": "USB-C Hub",
+          "Customer": "Hamza Tariq",
+          "Region": "North",
+          "Revenue": 18000,
+          "Profit": 4500,
+          "Quantity": 6
+        },
+        "pairedItem": {
+          "item": 8
+        }
+      },
+      {
+        "json": {
+          "row_number": 11,
+          "OrderID": "ORD010",
+          "Date": "2024-03-25",
+          "Product": "Office Chair",
+          "Customer": "Sara Malik",
+          "Region": "South",
+          "Revenue": 54000,
+          "Profit": 13500,
+          "Quantity": 6
+        },
+        "pairedItem": {
+          "item": 9
+        }
+      },
+      {
+        "json": {
+          "row_number": 12,
+          "OrderID": "ORD011",
+          "Date": "2024-04-03",
+          "Product": "Monitor 24\"",
+          "Customer": "Usman Raza",
+          "Region": "East",
+          "Revenue": 64000,
+          "Profit": 16000,
+          "Quantity": 2
+        },
+        "pairedItem": {
+          "item": 10
+        }
+      },
+      {
+        "json": {
+          "row_number": 13,
+          "OrderID": "ORD012",
+          "Date": "2024-04-11",
+          "Product": "Webcam HD",
+          "Customer": "Zara Hussain",
+          "Region": "West",
+          "Revenue": 15000,
+          "Profit": 3750,
+          "Quantity": 5
+        },
+        "pairedItem": {
+          "item": 11
+        }
+      },
+      {
+        "json": {
+          "row_number": 14,
+          "OrderID": "ORD013",
+          "Date": "2024-04-19",
+          "Product": "Printer Laser",
+          "Customer": "Saad Khan",
+          "Region": "North",
+          "Revenue": 85000,
+          "Profit": 21250,
+          "Quantity": 1
+        },
+        "pairedItem": {
+          "item": 12
+        }
+      },
+      {
+        "json": {
+          "row_number": 15,
+          "OrderID": "ORD014",
+          "Date": "2024-05-02",
+          "Product": "Wireless Keyboard",
+          "Customer": "Ayesha Ali",
+          "Region": "South",
+          "Revenue": 24000,
+          "Profit": 6000,
+          "Quantity": 4
+        },
+        "pairedItem": {
+          "item": 13
+        }
+      },
+      {
+        "json": {
+          "row_number": 16,
+          "OrderID": "ORD015",
+          "Date": "2024-05-09",
+          "Product": "Laptop Stand",
+          "Customer": "Bilal Ahmed",
+          "Region": "East",
+          "Revenue": 14000,
+          "Profit": 3500,
+          "Quantity": 7
+        },
+        "pairedItem": {
+          "item": 14
+        }
+      },
+      {
+        "json": {
+          "row_number": 17,
+          "OrderID": "ORD016",
+          "Date": "2024-05-18",
+          "Product": "External SSD",
+          "Customer": "Sara Malik",
+          "Region": "West",
+          "Revenue": 48000,
+          "Profit": 12000,
+          "Quantity": 3
+        },
+        "pairedItem": {
+          "item": 15
+        }
+      },
+      {
+        "json": {
+          "row_number": 18,
+          "OrderID": "ORD017",
+          "Date": "2024-06-01",
+          "Product": "Office Desk",
+          "Customer": "Hamza Tariq",
+          "Region": "North",
+          "Revenue": 110000,
+          "Profit": 27500,
+          "Quantity": 2
+        },
+        "pairedItem": {
+          "item": 16
+        }
+      },
+      {
+        "json": {
+          "row_number": 19,
+          "OrderID": "ORD018",
+          "Date": "2024-06-08",
+          "Product": "Headphones",
+          "Customer": "Usman Raza",
+          "Region": "South",
+          "Revenue": 30000,
+          "Profit": 7500,
+          "Quantity": 5
+        },
+        "pairedItem": {
+          "item": 17
+        }
+      },
+      {
+        "json": {
+          "row_number": 20,
+          "OrderID": "ORD019",
+          "Date": "2024-06-15",
+          "Product": "Graphic Tablet",
+          "Customer": "Zara Hussain",
+          "Region": "East",
+          "Revenue": 72000,
+          "Profit": 18000,
+          "Quantity": 2
+        },
+        "pairedItem": {
+          "item": 18
+        }
+      },
+      {
+        "json": {
+          "row_number": 21,
+          "OrderID": "ORD020",
+          "Date": "2024-06-24",
+          "Product": "WiFi Router",
+          "Customer": "Saad Khan",
+          "Region": "West",
+          "Revenue": 26000,
+          "Profit": 6500,
+          "Quantity": 4
+        },
+        "pairedItem": {
+          "item": 19
+        }
+      },
+      {
+        "json": {
+          "row_number": 2,
+          "Date": "2024-01-05",
+          "Month": "January",
+          "Quarter": "Q1",
+          "Year": 2024
+        },
+        "pairedItem": {
+          "item": 0,
+          "input": 1
+        }
+      },
+      {
+        "json": {
+          "row_number": 3,
+          "Date": "2024-01-12",
+          "Month": "January",
+          "Quarter": "Q1",
+          "Year": 2024
+        },
+        "pairedItem": {
+          "item": 1,
+          "input": 1
+        }
+      },
+      {
+        "json": {
+          "row_number": 4,
+          "Date": "2024-01-18",
+          "Month": "January",
+          "Quarter": "Q1",
+          "Year": 2024
+        },
+        "pairedItem": {
+          "item": 2,
+          "input": 1
+        }
+      },
+      {
+        "json": {
+          "row_number": 5,
+          "Date": "2024-02-02",
+          "Month": "February",
+          "Quarter": "Q1",
+          "Year": 2024
+        },
+        "pairedItem": {
+          "item": 3,
+          "input": 1
+        }
+      },
+      {
+        "json": {
+          "row_number": 6,
+          "Date": "2024-02-14",
+          "Month": "February",
+          "Quarter": "Q1",
+          "Year": 2024
+        },
+        "pairedItem": {
+          "item": 4,
+          "input": 1
+        }
+      },
+      {
+        "json": {
+          "row_number": 7,
+          "Date": "2024-02-20",
+          "Month": "February",
+          "Quarter": "Q1",
+          "Year": 2024
+        },
+        "pairedItem": {
+          "item": 5,
+          "input": 1
+        }
+      },
+      {
+        "json": {
+          "row_number": 8,
+          "Date": "2024-03-01",
+          "Month": "March",
+          "Quarter": "Q1",
+          "Year": 2024
+        },
+        "pairedItem": {
+          "item": 6,
+          "input": 1
+        }
+      },
+      {
+        "json": {
+          "row_number": 9,
+          "Date": "2024-03-10",
+          "Month": "March",
+          "Quarter": "Q1",
+          "Year": 2024
+        },
+        "pairedItem": {
+          "item": 7,
+          "input": 1
+        }
+      },
+      {
+        "json": {
+          "row_number": 10,
+          "Date": "2024-03-22",
+          "Month": "March",
+          "Quarter": "Q1",
+          "Year": 2024
+        },
+        "pairedItem": {
+          "item": 8,
+          "input": 1
+        }
+      },
+      {
+        "json": {
+          "row_number": 11,
+          "Date": "2024-04-05",
+          "Month": "April",
+          "Quarter": "Q2",
+          "Year": 2024
+        },
+        "pairedItem": {
+          "item": 9,
+          "input": 1
+        }
+      },
+      {
+        "json": {
+          "row_number": 12,
+          "Date": "2024-04-18",
+          "Month": "April",
+          "Quarter": "Q2",
+          "Year": 2024
+        },
+        "pairedItem": {
+          "item": 10,
+          "input": 1
+        }
+      },
+      {
+        "json": {
+          "row_number": 13,
+          "Date": "2024-04-30",
+          "Month": "April",
+          "Quarter": "Q2",
+          "Year": 2024
+        },
+        "pairedItem": {
+          "item": 11,
+          "input": 1
+        }
+      },
+      {
+        "json": {
+          "row_number": 14,
+          "Date": "2024-05-07",
+          "Month": "May",
+          "Quarter": "Q2",
+          "Year": 2024
+        },
+        "pairedItem": {
+          "item": 12,
+          "input": 1
+        }
+      },
+      {
+        "json": {
+          "row_number": 15,
+          "Date": "2024-05-15",
+          "Month": "May",
+          "Quarter": "Q2",
+          "Year": 2024
+        },
+        "pairedItem": {
+          "item": 13,
+          "input": 1
+        }
+      },
+      {
+        "json": {
+          "row_number": 16,
+          "Date": "2024-05-28",
+          "Month": "May",
+          "Quarter": "Q2",
+          "Year": 2024
+        },
+        "pairedItem": {
+          "item": 14,
+          "input": 1
+        }
+      },
+      {
+        "json": {
+          "row_number": 17,
+          "Date": "2024-06-01",
+          "Month": "June",
+          "Quarter": "Q2",
+          "Year": 2024
+        },
+        "pairedItem": {
+          "item": 15,
+          "input": 1
+        }
+      },
+      {
+        "json": {
+          "row_number": 18,
+          "Date": "2024-06-08",
+          "Month": "June",
+          "Quarter": "Q2",
+          "Year": 2024
+        },
+        "pairedItem": {
+          "item": 16,
+          "input": 1
+        }
+      },
+      {
+        "json": {
+          "row_number": 19,
+          "Date": "2024-06-15",
+          "Month": "June",
+          "Quarter": "Q2",
+          "Year": 2024
+        },
+        "pairedItem": {
+          "item": 17,
+          "input": 1
+        }
+      },
+      {
+        "json": {
+          "row_number": 20,
+          "Date": "2024-06-24",
+          "Month": "June",
+          "Quarter": "Q2",
+          "Year": 2024
+        },
+        "pairedItem": {
+          "item": 18,
+          "input": 1
+        }
+      },
+      {
+        "json": {
+          "row_number": 2,
+          "CustomerID": "C001",
+          "CustomerName": "Saad Khan",
+          "City": "Lahore",
+          "Segment": "Corporate"
+        },
+        "pairedItem": {
+          "item": 0,
+          "input": 2
+        }
+      },
+      {
+        "json": {
+          "row_number": 3,
+          "CustomerID": "C002",
+          "CustomerName": "Ayesha Ali",
+          "City": "Karachi",
+          "Segment": "Consumer"
+        },
+        "pairedItem": {
+          "item": 1,
+          "input": 2
+        }
+      },
+      {
+        "json": {
+          "row_number": 4,
+          "CustomerID": "C003",
+          "CustomerName": "Bilal Ahmed",
+          "City": "Islamabad",
+          "Segment": "Corporate"
+        },
+        "pairedItem": {
+          "item": 2,
+          "input": 2
+        }
+      },
+      {
+        "json": {
+          "row_number": 5,
+          "CustomerID": "C004",
+          "CustomerName": "Sara Malik",
+          "City": "Lahore",
+          "Segment": "SME"
+        },
+        "pairedItem": {
+          "item": 3,
+          "input": 2
+        }
+      },
+      {
+        "json": {
+          "row_number": 6,
+          "CustomerID": "C005",
+          "CustomerName": "Zara Hussain",
+          "City": "Faisalabad",
+          "Segment": "Consumer"
+        },
+        "pairedItem": {
+          "item": 4,
+          "input": 2
+        }
+      },
+      {
+        "json": {
+          "row_number": 7,
+          "CustomerID": "C006",
+          "CustomerName": "Hamza Tariq",
+          "City": "Rawalpindi",
+          "Segment": "Corporate"
+        },
+        "pairedItem": {
+          "item": 5,
+          "input": 2
+        }
+      },
+      {
+        "json": {
+          "row_number": 8,
+          "CustomerID": "C007",
+          "CustomerName": "Usman Raza",
+          "City": "Peshawar",
+          "Segment": "SME"
+        },
+        "pairedItem": {
+          "item": 6,
+          "input": 2
+        }
+      },
+      {
+        "json": {
+          "row_number": 9,
+          "CustomerID": "C008",
+          "CustomerName": "Mariam Ahmed",
+          "City": "Multan",
+          "Segment": "Consumer"
+        },
+        "pairedItem": {
+          "item": 7,
+          "input": 2
+        }
+      },
+      {
+        "json": {
+          "row_number": 10,
+          "CustomerID": "C009",
+          "CustomerName": "Ali Raza",
+          "City": "Sialkot",
+          "Segment": "Corporate"
+        },
+        "pairedItem": {
+          "item": 8,
+          "input": 2
+        }
+      },
+      {
+        "json": {
+          "row_number": 11,
+          "CustomerID": "C010",
+          "CustomerName": "Hina Aslam",
+          "City": "Gujranwala",
+          "Segment": "SME"
+        },
+        "pairedItem": {
+          "item": 9,
+          "input": 2
+        }
+      },
+      {
+        "json": {
+          "row_number": 12,
+          "CustomerID": "C011",
+          "CustomerName": "Fatima Noor",
+          "City": "Quetta",
+          "Segment": "Consumer"
+        },
+        "pairedItem": {
+          "item": 10,
+          "input": 2
+        }
+      },
+      {
+        "json": {
+          "row_number": 13,
+          "CustomerID": "C012",
+          "CustomerName": "Omar Siddiqui",
+          "City": "Hyderabad",
+          "Segment": "Corporate"
+        },
+        "pairedItem": {
+          "item": 11,
+          "input": 2
+        }
+      },
+      {
+        "json": {
+          "row_number": 14,
+          "CustomerID": "C013",
+          "CustomerName": "Sana Iqbal",
+          "City": "Bahawalpur",
+          "Segment": "SME"
+        },
+        "pairedItem": {
+          "item": 12,
+          "input": 2
+        }
+      },
+      {
+        "json": {
+          "row_number": 15,
+          "CustomerID": "C014",
+          "CustomerName": "Danish Malik",
+          "City": "Sargodha",
+          "Segment": "Consumer"
+        },
+        "pairedItem": {
+          "item": 13,
+          "input": 2
+        }
+      },
+      {
+        "json": {
+          "row_number": 16,
+          "CustomerID": "C015",
+          "CustomerName": "Aliya Khan",
+          "City": "Abbottabad",
+          "Segment": "Corporate"
+        },
+        "pairedItem": {
+          "item": 14,
+          "input": 2
+        }
+      },
+      {
+        "json": {
+          "row_number": 2,
+          "ProductID": "P001",
+          "ProductName": "Laptop Pro",
+          "Category": "Electronics",
+          "SubCategory": "Computers"
+        },
+        "pairedItem": {
+          "item": 0,
+          "input": 3
+        }
+      },
+      {
+        "json": {
+          "row_number": 3,
+          "ProductID": "P002",
+          "ProductName": "Office Chair",
+          "Category": "Furniture",
+          "SubCategory": "Seating"
+        },
+        "pairedItem": {
+          "item": 1,
+          "input": 3
+        }
+      },
+      {
+        "json": {
+          "row_number": 4,
+          "ProductID": "P003",
+          "ProductName": "Wireless Mouse",
+          "Category": "Electronics",
+          "SubCategory": "Accessories"
+        },
+        "pairedItem": {
+          "item": 2,
+          "input": 3
+        }
+      },
+      {
+        "json": {
+          "row_number": 5,
+          "ProductID": "P004",
+          "ProductName": "Standing Desk",
+          "Category": "Furniture",
+          "SubCategory": "Desks"
+        },
+        "pairedItem": {
+          "item": 3,
+          "input": 3
+        }
+      },
+      {
+        "json": {
+          "row_number": 6,
+          "ProductID": "P005",
+          "ProductName": "Monitor 27\"",
+          "Category": "Electronics",
+          "SubCategory": "Displays"
+        },
+        "pairedItem": {
+          "item": 4,
+          "input": 3
+        }
+      },
+      {
+        "json": {
+          "row_number": 7,
+          "ProductID": "P006",
+          "ProductName": "Keyboard Mechanical",
+          "Category": "Electronics",
+          "SubCategory": "Accessories"
+        },
+        "pairedItem": {
+          "item": 5,
+          "input": 3
+        }
+      },
+      {
+        "json": {
+          "row_number": 8,
+          "ProductID": "P007",
+          "ProductName": "USB-C Hub",
+          "Category": "Electronics",
+          "SubCategory": "Accessories"
+        },
+        "pairedItem": {
+          "item": 6,
+          "input": 3
+        }
+      },
+      {
+        "json": {
+          "row_number": 9,
+          "ProductID": "P008",
+          "ProductName": "Monitor 24\"",
+          "Category": "Electronics",
+          "SubCategory": "Displays"
+        },
+        "pairedItem": {
+          "item": 7,
+          "input": 3
+        }
+      },
+      {
+        "json": {
+          "row_number": 10,
+          "ProductID": "P009",
+          "ProductName": "Webcam HD",
+          "Category": "Electronics",
+          "SubCategory": "Cameras"
+        },
+        "pairedItem": {
+          "item": 8,
+          "input": 3
+        }
+      },
+      {
+        "json": {
+          "row_number": 11,
+          "ProductID": "P010",
+          "ProductName": "Printer Laser",
+          "Category": "Electronics",
+          "SubCategory": "Printers"
+        },
+        "pairedItem": {
+          "item": 9,
+          "input": 3
+        }
+      },
+      {
+        "json": {
+          "row_number": 12,
+          "ProductID": "P011",
+          "ProductName": "Wireless Keyboard",
+          "Category": "Electronics",
+          "SubCategory": "Accessories"
+        },
+        "pairedItem": {
+          "item": 10,
+          "input": 3
+        }
+      },
+      {
+        "json": {
+          "row_number": 13,
+          "ProductID": "P012",
+          "ProductName": "Laptop Stand",
+          "Category": "Accessories",
+          "SubCategory": "Stands"
+        },
+        "pairedItem": {
+          "item": 11,
+          "input": 3
+        }
+      },
+      {
+        "json": {
+          "row_number": 14,
+          "ProductID": "P013",
+          "ProductName": "External SSD",
+          "Category": "Electronics",
+          "SubCategory": "Storage"
+        },
+        "pairedItem": {
+          "item": 12,
+          "input": 3
+        }
+      },
+      {
+        "json": {
+          "row_number": 15,
+          "ProductID": "P014",
+          "ProductName": "Office Desk",
+          "Category": "Furniture",
+          "SubCategory": "Desks"
+        },
+        "pairedItem": {
+          "item": 13,
+          "input": 3
+        }
+      },
+      {
+        "json": {
+          "row_number": 16,
+          "ProductID": "P015",
+          "ProductName": "Headphones",
+          "Category": "Electronics",
+          "SubCategory": "Audio"
+        },
+        "pairedItem": {
+          "item": 14,
+          "input": 3
+        }
+      },
+      {
+        "json": {
+          "row_number": 17,
+          "ProductID": "P016",
+          "ProductName": "Graphic Tablet",
+          "Category": "Electronics",
+          "SubCategory": "Input Devices"
+        },
+        "pairedItem": {
+          "item": 15,
+          "input": 3
+        }
+      },
+      {
+        "json": {
+          "row_number": 18,
+          "ProductID": "P017",
+          "ProductName": "WiFi Router",
+          "Category": "Networking",
+          "SubCategory": "Routers"
+        },
+        "pairedItem": {
+          "item": 16,
+          "input": 3
+        }
+      },
+      {
+        "json": {
+          "row_number": 19,
+          "ProductID": "P018",
+          "ProductName": "Ergonomic Mouse",
+          "Category": "Electronics",
+          "SubCategory": "Accessories"
+        },
+        "pairedItem": {
+          "item": 17,
+          "input": 3
+        }
+      },
+      {
+        "json": {
+          "row_number": 20,
+          "ProductID": "P019",
+          "ProductName": "Desk Lamp",
+          "Category": "Furniture",
+          "SubCategory": "Lighting"
+        },
+        "pairedItem": {
+          "item": 18,
+          "input": 3
+        }
+      },
+      {
+        "json": {
+          "row_number": 21,
+          "ProductID": "P020",
+          "ProductName": "Docking Station",
+          "Category": "Electronics",
+          "SubCategory": "Accessories"
+        },
+        "pairedItem": {
+          "item": 19,
+          "input": 3
+        }
+      },
+      {
+        "json": {
+          "row_number": 2,
+          "RegionID": "R001",
+          "Region": "North",
+          "Country": "Pakistan"
+        },
+        "pairedItem": {
+          "item": 0,
+          "input": 4
+        }
+      },
+      {
+        "json": {
+          "row_number": 3,
+          "RegionID": "R002",
+          "Region": "South",
+          "Country": "Pakistan"
+        },
+        "pairedItem": {
+          "item": 1,
+          "input": 4
+        }
+      },
+      {
+        "json": {
+          "row_number": 4,
+          "RegionID": "R003",
+          "Region": "East",
+          "Country": "Pakistan"
+        },
+        "pairedItem": {
+          "item": 2,
+          "input": 4
+        }
+      },
+      {
+        "json": {
+          "row_number": 5,
+          "RegionID": "R004",
+          "Region": "West",
+          "Country": "Pakistan"
+        },
+        "pairedItem": {
+          "item": 3,
+          "input": 4
+        }
+      }
+    ],
+    "Fact_Sales": [
+      {
+        "json": {
+          "row_number": 2,
+          "OrderID": "ORD001",
+          "Date": "2024-01-05",
+          "Product": "Laptop Pro",
+          "Customer": "Saad Khan",
+          "Region": "North",
+          "Revenue": 250000,
+          "Profit": 62500,
+          "Quantity": 2
+        },
+        "pairedItem": {
+          "item": 0
+        }
+      },
+      {
+        "json": {
+          "row_number": 3,
+          "OrderID": "ORD002",
+          "Date": "2024-01-12",
+          "Product": "Office Chair",
+          "Customer": "Ayesha Ali",
+          "Region": "South",
+          "Revenue": 45000,
+          "Profit": 11250,
+          "Quantity": 5
+        },
+        "pairedItem": {
+          "item": 0
+        }
+      },
+      {
+        "json": {
+          "row_number": 4,
+          "OrderID": "ORD003",
+          "Date": "2024-01-18",
+          "Product": "Laptop Pro",
+          "Customer": "Bilal Ahmed",
+          "Region": "East",
+          "Revenue": 125000,
+          "Profit": 31250,
+          "Quantity": 1
+        },
+        "pairedItem": {
+          "item": 0
+        }
+      },
+      {
+        "json": {
+          "row_number": 5,
+          "OrderID": "ORD004",
+          "Date": "2024-02-02",
+          "Product": "Wireless Mouse",
+          "Customer": "Sara Malik",
+          "Region": "West",
+          "Revenue": 12000,
+          "Profit": 3000,
+          "Quantity": 10
+        },
+        "pairedItem": {
+          "item": 0
+        }
+      },
+      {
+        "json": {
+          "row_number": 6,
+          "OrderID": "ORD005",
+          "Date": "2024-02-14",
+          "Product": "Standing Desk",
+          "Customer": "Saad Khan",
+          "Region": "North",
+          "Revenue": 180000,
+          "Profit": 45000,
+          "Quantity": 2
+        },
+        "pairedItem": {
+          "item": 0
+        }
+      },
+      {
+        "json": {
+          "row_number": 7,
+          "OrderID": "ORD006",
+          "Date": "2024-02-20",
+          "Product": "Monitor 27\"",
+          "Customer": "Zara Hussain",
+          "Region": "South",
+          "Revenue": 95000,
+          "Profit": 23750,
+          "Quantity": 3
+        },
+        "pairedItem": {
+          "item": 0
+        }
+      },
+      {
+        "json": {
+          "row_number": 8,
+          "OrderID": "ORD007",
+          "Date": "2024-03-01",
+          "Product": "Laptop Pro",
+          "Customer": "Ayesha Ali",
+          "Region": "East",
+          "Revenue": 250000,
+          "Profit": 62500,
+          "Quantity": 2
+        },
+        "pairedItem": {
+          "item": 0
+        }
+      },
+      {
+        "json": {
+          "row_number": 9,
+          "OrderID": "ORD008",
+          "Date": "2024-03-10",
+          "Product": "Keyboard Mechanical",
+          "Customer": "Bilal Ahmed",
+          "Region": "West",
+          "Revenue": 22000,
+          "Profit": 5500,
+          "Quantity": 4
+        },
+        "pairedItem": {
+          "item": 0
+        }
+      },
+      {
+        "json": {
+          "row_number": 10,
+          "OrderID": "ORD009",
+          "Date": "2024-03-16",
+          "Product": "USB-C Hub",
+          "Customer": "Hamza Tariq",
+          "Region": "North",
+          "Revenue": 18000,
+          "Profit": 4500,
+          "Quantity": 6
+        },
+        "pairedItem": {
+          "item": 0
+        }
+      },
+      {
+        "json": {
+          "row_number": 11,
+          "OrderID": "ORD010",
+          "Date": "2024-03-25",
+          "Product": "Office Chair",
+          "Customer": "Sara Malik",
+          "Region": "South",
+          "Revenue": 54000,
+          "Profit": 13500,
+          "Quantity": 6
+        },
+        "pairedItem": {
+          "item": 0
+        }
+      },
+      {
+        "json": {
+          "row_number": 12,
+          "OrderID": "ORD011",
+          "Date": "2024-04-03",
+          "Product": "Monitor 24\"",
+          "Customer": "Usman Raza",
+          "Region": "East",
+          "Revenue": 64000,
+          "Profit": 16000,
+          "Quantity": 2
+        },
+        "pairedItem": {
+          "item": 0
+        }
+      },
+      {
+        "json": {
+          "row_number": 13,
+          "OrderID": "ORD012",
+          "Date": "2024-04-11",
+          "Product": "Webcam HD",
+          "Customer": "Zara Hussain",
+          "Region": "West",
+          "Revenue": 15000,
+          "Profit": 3750,
+          "Quantity": 5
+        },
+        "pairedItem": {
+          "item": 0
+        }
+      },
+      {
+        "json": {
+          "row_number": 14,
+          "OrderID": "ORD013",
+          "Date": "2024-04-19",
+          "Product": "Printer Laser",
+          "Customer": "Saad Khan",
+          "Region": "North",
+          "Revenue": 85000,
+          "Profit": 21250,
+          "Quantity": 1
+        },
+        "pairedItem": {
+          "item": 0
+        }
+      },
+      {
+        "json": {
+          "row_number": 15,
+          "OrderID": "ORD014",
+          "Date": "2024-05-02",
+          "Product": "Wireless Keyboard",
+          "Customer": "Ayesha Ali",
+          "Region": "South",
+          "Revenue": 24000,
+          "Profit": 6000,
+          "Quantity": 4
+        },
+        "pairedItem": {
+          "item": 0
+        }
+      },
+      {
+        "json": {
+          "row_number": 16,
+          "OrderID": "ORD015",
+          "Date": "2024-05-09",
+          "Product": "Laptop Stand",
+          "Customer": "Bilal Ahmed",
+          "Region": "East",
+          "Revenue": 14000,
+          "Profit": 3500,
+          "Quantity": 7
+        },
+        "pairedItem": {
+          "item": 0
+        }
+      },
+      {
+        "json": {
+          "row_number": 17,
+          "OrderID": "ORD016",
+          "Date": "2024-05-18",
+          "Product": "External SSD",
+          "Customer": "Sara Malik",
+          "Region": "West",
+          "Revenue": 48000,
+          "Profit": 12000,
+          "Quantity": 3
+        },
+        "pairedItem": {
+          "item": 0
+        }
+      },
+      {
+        "json": {
+          "row_number": 18,
+          "OrderID": "ORD017",
+          "Date": "2024-06-01",
+          "Product": "Office Desk",
+          "Customer": "Hamza Tariq",
+          "Region": "North",
+          "Revenue": 110000,
+          "Profit": 27500,
+          "Quantity": 2
+        },
+        "pairedItem": {
+          "item": 0
+        }
+      },
+      {
+        "json": {
+          "row_number": 19,
+          "OrderID": "ORD018",
+          "Date": "2024-06-08",
+          "Product": "Headphones",
+          "Customer": "Usman Raza",
+          "Region": "South",
+          "Revenue": 30000,
+          "Profit": 7500,
+          "Quantity": 5
+        },
+        "pairedItem": {
+          "item": 0
+        }
+      },
+      {
+        "json": {
+          "row_number": 20,
+          "OrderID": "ORD019",
+          "Date": "2024-06-15",
+          "Product": "Graphic Tablet",
+          "Customer": "Zara Hussain",
+          "Region": "East",
+          "Revenue": 72000,
+          "Profit": 18000,
+          "Quantity": 2
+        },
+        "pairedItem": {
+          "item": 0
+        }
+      },
+      {
+        "json": {
+          "row_number": 21,
+          "OrderID": "ORD020",
+          "Date": "2024-06-24",
+          "Product": "WiFi Router",
+          "Customer": "Saad Khan",
+          "Region": "West",
+          "Revenue": 26000,
+          "Profit": 6500,
+          "Quantity": 4
+        },
+        "pairedItem": {
+          "item": 0
+        }
+      }
+    ],
+    "Dim_Date": [
+      {
+        "json": {
+          "row_number": 2,
+          "Date": "2024-01-05",
+          "Month": "January",
+          "Quarter": "Q1",
+          "Year": 2024
+        },
+        "pairedItem": {
+          "item": 0
+        }
+      },
+      {
+        "json": {
+          "row_number": 3,
+          "Date": "2024-01-12",
+          "Month": "January",
+          "Quarter": "Q1",
+          "Year": 2024
+        },
+        "pairedItem": {
+          "item": 0
+        }
+      },
+      {
+        "json": {
+          "row_number": 4,
+          "Date": "2024-01-18",
+          "Month": "January",
+          "Quarter": "Q1",
+          "Year": 2024
+        },
+        "pairedItem": {
+          "item": 0
+        }
+      },
+      {
+        "json": {
+          "row_number": 5,
+          "Date": "2024-02-02",
+          "Month": "February",
+          "Quarter": "Q1",
+          "Year": 2024
+        },
+        "pairedItem": {
+          "item": 0
+        }
+      },
+      {
+        "json": {
+          "row_number": 6,
+          "Date": "2024-02-14",
+          "Month": "February",
+          "Quarter": "Q1",
+          "Year": 2024
+        },
+        "pairedItem": {
+          "item": 0
+        }
+      },
+      {
+        "json": {
+          "row_number": 7,
+          "Date": "2024-02-20",
+          "Month": "February",
+          "Quarter": "Q1",
+          "Year": 2024
+        },
+        "pairedItem": {
+          "item": 0
+        }
+      },
+      {
+        "json": {
+          "row_number": 8,
+          "Date": "2024-03-01",
+          "Month": "March",
+          "Quarter": "Q1",
+          "Year": 2024
+        },
+        "pairedItem": {
+          "item": 0
+        }
+      },
+      {
+        "json": {
+          "row_number": 9,
+          "Date": "2024-03-10",
+          "Month": "March",
+          "Quarter": "Q1",
+          "Year": 2024
+        },
+        "pairedItem": {
+          "item": 0
+        }
+      },
+      {
+        "json": {
+          "row_number": 10,
+          "Date": "2024-03-22",
+          "Month": "March",
+          "Quarter": "Q1",
+          "Year": 2024
+        },
+        "pairedItem": {
+          "item": 0
+        }
+      },
+      {
+        "json": {
+          "row_number": 11,
+          "Date": "2024-04-05",
+          "Month": "April",
+          "Quarter": "Q2",
+          "Year": 2024
+        },
+        "pairedItem": {
+          "item": 0
+        }
+      },
+      {
+        "json": {
+          "row_number": 12,
+          "Date": "2024-04-18",
+          "Month": "April",
+          "Quarter": "Q2",
+          "Year": 2024
+        },
+        "pairedItem": {
+          "item": 0
+        }
+      },
+      {
+        "json": {
+          "row_number": 13,
+          "Date": "2024-04-30",
+          "Month": "April",
+          "Quarter": "Q2",
+          "Year": 2024
+        },
+        "pairedItem": {
+          "item": 0
+        }
+      },
+      {
+        "json": {
+          "row_number": 14,
+          "Date": "2024-05-07",
+          "Month": "May",
+          "Quarter": "Q2",
+          "Year": 2024
+        },
+        "pairedItem": {
+          "item": 0
+        }
+      },
+      {
+        "json": {
+          "row_number": 15,
+          "Date": "2024-05-15",
+          "Month": "May",
+          "Quarter": "Q2",
+          "Year": 2024
+        },
+        "pairedItem": {
+          "item": 0
+        }
+      },
+      {
+        "json": {
+          "row_number": 16,
+          "Date": "2024-05-28",
+          "Month": "May",
+          "Quarter": "Q2",
+          "Year": 2024
+        },
+        "pairedItem": {
+          "item": 0
+        }
+      },
+      {
+        "json": {
+          "row_number": 17,
+          "Date": "2024-06-01",
+          "Month": "June",
+          "Quarter": "Q2",
+          "Year": 2024
+        },
+        "pairedItem": {
+          "item": 0
+        }
+      },
+      {
+        "json": {
+          "row_number": 18,
+          "Date": "2024-06-08",
+          "Month": "June",
+          "Quarter": "Q2",
+          "Year": 2024
+        },
+        "pairedItem": {
+          "item": 0
+        }
+      },
+      {
+        "json": {
+          "row_number": 19,
+          "Date": "2024-06-15",
+          "Month": "June",
+          "Quarter": "Q2",
+          "Year": 2024
+        },
+        "pairedItem": {
+          "item": 0
+        }
+      },
+      {
+        "json": {
+          "row_number": 20,
+          "Date": "2024-06-24",
+          "Month": "June",
+          "Quarter": "Q2",
+          "Year": 2024
+        },
+        "pairedItem": {
+          "item": 0
+        }
+      }
+    ],
+    "Dim_Customer": [
+      {
+        "json": {
+          "row_number": 2,
+          "CustomerID": "C001",
+          "CustomerName": "Saad Khan",
+          "City": "Lahore",
+          "Segment": "Corporate"
+        },
+        "pairedItem": {
+          "item": 0
+        }
+      },
+      {
+        "json": {
+          "row_number": 3,
+          "CustomerID": "C002",
+          "CustomerName": "Ayesha Ali",
+          "City": "Karachi",
+          "Segment": "Consumer"
+        },
+        "pairedItem": {
+          "item": 0
+        }
+      },
+      {
+        "json": {
+          "row_number": 4,
+          "CustomerID": "C003",
+          "CustomerName": "Bilal Ahmed",
+          "City": "Islamabad",
+          "Segment": "Corporate"
+        },
+        "pairedItem": {
+          "item": 0
+        }
+      },
+      {
+        "json": {
+          "row_number": 5,
+          "CustomerID": "C004",
+          "CustomerName": "Sara Malik",
+          "City": "Lahore",
+          "Segment": "SME"
+        },
+        "pairedItem": {
+          "item": 0
+        }
+      },
+      {
+        "json": {
+          "row_number": 6,
+          "CustomerID": "C005",
+          "CustomerName": "Zara Hussain",
+          "City": "Faisalabad",
+          "Segment": "Consumer"
+        },
+        "pairedItem": {
+          "item": 0
+        }
+      },
+      {
+        "json": {
+          "row_number": 7,
+          "CustomerID": "C006",
+          "CustomerName": "Hamza Tariq",
+          "City": "Rawalpindi",
+          "Segment": "Corporate"
+        },
+        "pairedItem": {
+          "item": 0
+        }
+      },
+      {
+        "json": {
+          "row_number": 8,
+          "CustomerID": "C007",
+          "CustomerName": "Usman Raza",
+          "City": "Peshawar",
+          "Segment": "SME"
+        },
+        "pairedItem": {
+          "item": 0
+        }
+      },
+      {
+        "json": {
+          "row_number": 9,
+          "CustomerID": "C008",
+          "CustomerName": "Mariam Ahmed",
+          "City": "Multan",
+          "Segment": "Consumer"
+        },
+        "pairedItem": {
+          "item": 0
+        }
+      },
+      {
+        "json": {
+          "row_number": 10,
+          "CustomerID": "C009",
+          "CustomerName": "Ali Raza",
+          "City": "Sialkot",
+          "Segment": "Corporate"
+        },
+        "pairedItem": {
+          "item": 0
+        }
+      },
+      {
+        "json": {
+          "row_number": 11,
+          "CustomerID": "C010",
+          "CustomerName": "Hina Aslam",
+          "City": "Gujranwala",
+          "Segment": "SME"
+        },
+        "pairedItem": {
+          "item": 0
+        }
+      },
+      {
+        "json": {
+          "row_number": 12,
+          "CustomerID": "C011",
+          "CustomerName": "Fatima Noor",
+          "City": "Quetta",
+          "Segment": "Consumer"
+        },
+        "pairedItem": {
+          "item": 0
+        }
+      },
+      {
+        "json": {
+          "row_number": 13,
+          "CustomerID": "C012",
+          "CustomerName": "Omar Siddiqui",
+          "City": "Hyderabad",
+          "Segment": "Corporate"
+        },
+        "pairedItem": {
+          "item": 0
+        }
+      },
+      {
+        "json": {
+          "row_number": 14,
+          "CustomerID": "C013",
+          "CustomerName": "Sana Iqbal",
+          "City": "Bahawalpur",
+          "Segment": "SME"
+        },
+        "pairedItem": {
+          "item": 0
+        }
+      },
+      {
+        "json": {
+          "row_number": 15,
+          "CustomerID": "C014",
+          "CustomerName": "Danish Malik",
+          "City": "Sargodha",
+          "Segment": "Consumer"
+        },
+        "pairedItem": {
+          "item": 0
+        }
+      },
+      {
+        "json": {
+          "row_number": 16,
+          "CustomerID": "C015",
+          "CustomerName": "Aliya Khan",
+          "City": "Abbottabad",
+          "Segment": "Corporate"
+        },
+        "pairedItem": {
+          "item": 0
+        }
+      }
+    ],
+    "Dim_Product": [
+      {
+        "json": {
+          "row_number": 2,
+          "ProductID": "P001",
+          "ProductName": "Laptop Pro",
+          "Category": "Electronics",
+          "SubCategory": "Computers"
+        },
+        "pairedItem": {
+          "item": 0
+        }
+      },
+      {
+        "json": {
+          "row_number": 3,
+          "ProductID": "P002",
+          "ProductName": "Office Chair",
+          "Category": "Furniture",
+          "SubCategory": "Seating"
+        },
+        "pairedItem": {
+          "item": 0
+        }
+      },
+      {
+        "json": {
+          "row_number": 4,
+          "ProductID": "P003",
+          "ProductName": "Wireless Mouse",
+          "Category": "Electronics",
+          "SubCategory": "Accessories"
+        },
+        "pairedItem": {
+          "item": 0
+        }
+      },
+      {
+        "json": {
+          "row_number": 5,
+          "ProductID": "P004",
+          "ProductName": "Standing Desk",
+          "Category": "Furniture",
+          "SubCategory": "Desks"
+        },
+        "pairedItem": {
+          "item": 0
+        }
+      },
+      {
+        "json": {
+          "row_number": 6,
+          "ProductID": "P005",
+          "ProductName": "Monitor 27\"",
+          "Category": "Electronics",
+          "SubCategory": "Displays"
+        },
+        "pairedItem": {
+          "item": 0
+        }
+      },
+      {
+        "json": {
+          "row_number": 7,
+          "ProductID": "P006",
+          "ProductName": "Keyboard Mechanical",
+          "Category": "Electronics",
+          "SubCategory": "Accessories"
+        },
+        "pairedItem": {
+          "item": 0
+        }
+      },
+      {
+        "json": {
+          "row_number": 8,
+          "ProductID": "P007",
+          "ProductName": "USB-C Hub",
+          "Category": "Electronics",
+          "SubCategory": "Accessories"
+        },
+        "pairedItem": {
+          "item": 0
+        }
+      },
+      {
+        "json": {
+          "row_number": 9,
+          "ProductID": "P008",
+          "ProductName": "Monitor 24\"",
+          "Category": "Electronics",
+          "SubCategory": "Displays"
+        },
+        "pairedItem": {
+          "item": 0
+        }
+      },
+      {
+        "json": {
+          "row_number": 10,
+          "ProductID": "P009",
+          "ProductName": "Webcam HD",
+          "Category": "Electronics",
+          "SubCategory": "Cameras"
+        },
+        "pairedItem": {
+          "item": 0
+        }
+      },
+      {
+        "json": {
+          "row_number": 11,
+          "ProductID": "P010",
+          "ProductName": "Printer Laser",
+          "Category": "Electronics",
+          "SubCategory": "Printers"
+        },
+        "pairedItem": {
+          "item": 0
+        }
+      },
+      {
+        "json": {
+          "row_number": 12,
+          "ProductID": "P011",
+          "ProductName": "Wireless Keyboard",
+          "Category": "Electronics",
+          "SubCategory": "Accessories"
+        },
+        "pairedItem": {
+          "item": 0
+        }
+      },
+      {
+        "json": {
+          "row_number": 13,
+          "ProductID": "P012",
+          "ProductName": "Laptop Stand",
+          "Category": "Accessories",
+          "SubCategory": "Stands"
+        },
+        "pairedItem": {
+          "item": 0
+        }
+      },
+      {
+        "json": {
+          "row_number": 14,
+          "ProductID": "P013",
+          "ProductName": "External SSD",
+          "Category": "Electronics",
+          "SubCategory": "Storage"
+        },
+        "pairedItem": {
+          "item": 0
+        }
+      },
+      {
+        "json": {
+          "row_number": 15,
+          "ProductID": "P014",
+          "ProductName": "Office Desk",
+          "Category": "Furniture",
+          "SubCategory": "Desks"
+        },
+        "pairedItem": {
+          "item": 0
+        }
+      },
+      {
+        "json": {
+          "row_number": 16,
+          "ProductID": "P015",
+          "ProductName": "Headphones",
+          "Category": "Electronics",
+          "SubCategory": "Audio"
+        },
+        "pairedItem": {
+          "item": 0
+        }
+      },
+      {
+        "json": {
+          "row_number": 17,
+          "ProductID": "P016",
+          "ProductName": "Graphic Tablet",
+          "Category": "Electronics",
+          "SubCategory": "Input Devices"
+        },
+        "pairedItem": {
+          "item": 0
+        }
+      },
+      {
+        "json": {
+          "row_number": 18,
+          "ProductID": "P017",
+          "ProductName": "WiFi Router",
+          "Category": "Networking",
+          "SubCategory": "Routers"
+        },
+        "pairedItem": {
+          "item": 0
+        }
+      },
+      {
+        "json": {
+          "row_number": 19,
+          "ProductID": "P018",
+          "ProductName": "Ergonomic Mouse",
+          "Category": "Electronics",
+          "SubCategory": "Accessories"
+        },
+        "pairedItem": {
+          "item": 0
+        }
+      },
+      {
+        "json": {
+          "row_number": 20,
+          "ProductID": "P019",
+          "ProductName": "Desk Lamp",
+          "Category": "Furniture",
+          "SubCategory": "Lighting"
+        },
+        "pairedItem": {
+          "item": 0
+        }
+      },
+      {
+        "json": {
+          "row_number": 21,
+          "ProductID": "P020",
+          "ProductName": "Docking Station",
+          "Category": "Electronics",
+          "SubCategory": "Accessories"
+        },
+        "pairedItem": {
+          "item": 0
+        }
+      }
+    ],
+    "Dim_Region": [
+      {
+        "json": {
+          "row_number": 2,
+          "RegionID": "R001",
+          "Region": "North",
+          "Country": "Pakistan"
+        },
+        "pairedItem": {
+          "item": 0
+        }
+      },
+      {
+        "json": {
+          "row_number": 3,
+          "RegionID": "R002",
+          "Region": "South",
+          "Country": "Pakistan"
+        },
+        "pairedItem": {
+          "item": 0
+        }
+      },
+      {
+        "json": {
+          "row_number": 4,
+          "RegionID": "R003",
+          "Region": "East",
+          "Country": "Pakistan"
+        },
+        "pairedItem": {
+          "item": 0
+        }
+      },
+      {
+        "json": {
+          "row_number": 5,
+          "RegionID": "R004",
+          "Region": "West",
+          "Country": "Pakistan"
+        },
+        "pairedItem": {
+          "item": 0
+        }
+      }
+    ],
+    "Dax Calculation": [
+      {
+        "json": {
+          "total_revenue": 1539000,
+          "total_profit": 384750,
+          "total_orders": 20,
+          "total_quantity": 76,
+          "profit_margin": 25,
+          "avg_order_value": 76950,
+          "top_product": "Laptop Pro",
+          "top_product_rev": 625000,
+          "top_customer": "Saad Khan",
+          "top_customer_rev": 541000,
+          "top_region": "North",
+          "top_region_rev": 643000,
+          "best_month": "January 2024",
+          "worst_month": "May 2024",
+          "mom_growth": 176.74,
+          "monthly_trend": "{\"January 2024\":420000,\"February 2024\":287000,\"March 2024\":344000,\"April 2024\":164000,\"May 2024\":86000,\"June 2024\":238000}",
+          "top_products_table": "[{\"product\":\"Laptop Pro\",\"revenue\":\"625000.00\"},{\"product\":\"Standing Desk\",\"revenue\":\"180000.00\"},{\"product\":\"Office Desk\",\"revenue\":\"110000.00\"}]",
+          "region_table": "[{\"region\":\"North\",\"revenue\":\"643000.00\"},{\"region\":\"East\",\"revenue\":\"525000.00\"},{\"region\":\"South\",\"revenue\":\"248000.00\"},{\"region\":\"West\",\"revenue\":\"123000.00\"}]",
+          "by_quarter": "{\"Q1 2024\":1051000,\"Q2 2024\":488000}",
+          "report_generated": "2026-08-04T18:32:46.870Z"
+        },
+        "pairedItem": {
+          "item": 0
+        }
+      }
+    ],
+    "Wait": [
+      {
+        "json": {
+          "total_revenue": 1539000,
+          "total_profit": 384750,
+          "total_orders": 20,
+          "total_quantity": 76,
+          "profit_margin": 25,
+          "avg_order_value": 76950,
+          "top_product": "Laptop Pro",
+          "top_product_rev": 625000,
+          "top_customer": "Saad Khan",
+          "top_customer_rev": 541000,
+          "top_region": "North",
+          "top_region_rev": 643000,
+          "best_month": "January 2024",
+          "worst_month": "May 2024",
+          "mom_growth": 176.74,
+          "monthly_trend": "{\"January 2024\":420000,\"February 2024\":287000,\"March 2024\":344000,\"April 2024\":164000,\"May 2024\":86000,\"June 2024\":238000}",
+          "top_products_table": "[{\"product\":\"Laptop Pro\",\"revenue\":\"625000.00\"},{\"product\":\"Standing Desk\",\"revenue\":\"180000.00\"},{\"product\":\"Office Desk\",\"revenue\":\"110000.00\"}]",
+          "region_table": "[{\"region\":\"North\",\"revenue\":\"643000.00\"},{\"region\":\"East\",\"revenue\":\"525000.00\"},{\"region\":\"South\",\"revenue\":\"248000.00\"},{\"region\":\"West\",\"revenue\":\"123000.00\"}]",
+          "by_quarter": "{\"Q1 2024\":1051000,\"Q2 2024\":488000}",
+          "report_generated": "2026-08-04T18:32:46.870Z"
+        },
+        "pairedItem": {
+          "item": 0
+        }
+      }
+    ],
+    "Basic LLM Chain": [
+      {
+        "json": {
+          "text": "<html>\n  <body style=\"margin: 0; padding: 0; font-family: Arial, sans-serif;\">\n    <table width=\"100%\" border=\"0\" cellpadding=\"0\" cellspacing=\"0\" style=\"background-color: #1a1a2e; color: #ffffff; padding: 20px; text-align: center;\">\n      <tr>\n        <td>\n          <h1 style=\"font-size: 24px; margin: 0;\">Weekly KPI Report</h1>\n          <p style=\"font-size: 16px; margin: 0;\">Report Date: 2026-08-04T18:32:46.870Z</p>\n        </td>\n      </tr>\n    </table>\n    <table width=\"100%\" border=\"0\" cellpadding=\"0\" cellspacing=\"0\" style=\"padding: 20px;\">\n      <tr>\n        <td>\n          <h2 style=\"font-size: 20px; margin-top: 0;\">Executive Summary</h2>\n          <p style=\"font-size: 16px;\">Our weekly revenue stands at ₨ 1,539,000 with a total profit of ₨ 384,750, resulting in a profit margin of 25%. We have seen a significant month-over-month growth of 176.74%.</p>\n        </td>\n      </tr>\n    </table>\n    <table width=\"100%\" border=\"0\" cellpadding=\"0\" cellspacing=\"0\" style=\"padding: 20px;\">\n      <tr>\n        <td>\n          <h2 style=\"font-size: 20px; margin-top: 0;\">KPI Cards</h2>\n        </td>\n      </tr>\n      <tr>\n        <td>\n          <table width=\"100%\" border=\"0\" cellpadding=\"0\" cellspacing=\"0\">\n            <tr>\n              <td style=\"width: 25%; background-color: #4CAF50; color: #ffffff; padding: 10px; border-radius: 5px;\">\n                <h3 style=\"font-size: 16px; margin: 0;\">Total Revenue</h3>\n                <p style=\"font-size: 24px; margin: 0;\">₨ 1,539,000</p>\n              </td>\n              <td style=\"width: 25%; background-color: #03A9F4; color: #ffffff; padding: 10px; border-radius: 5px;\">\n                <h3 style=\"font-size: 16px; margin: 0;\">Total Profit</h3>\n                <p style=\"font-size: 24px; margin: 0;\">₨ 384,750</p>\n              </td>\n              <td style=\"width: 25%; background-color: #FF9800; color: #ffffff; padding: 10px; border-radius: 5px;\">\n                <h3 style=\"font-size: 16px; margin: 0;\">Profit Margin</h3>\n                <p style=\"font-size: 24px; margin: 0;\">25%</p>\n              </td>\n              <td style=\"width: 25%; background-color: #E91E63; color: #ffffff; padding: 10px; border-radius: 5px;\">\n                <h3 style=\"font-size: 16px; margin: 0;\">Avg Order Value</h3>\n                <p style=\"font-size: 24px; margin: 0;\">₨ 76,950</p>\n              </td>\n            </tr>\n          </table>\n        </td>\n      </tr>\n    </table>\n    <table width=\"100%\" border=\"0\" cellpadding=\"0\" cellspacing=\"0\" style=\"padding: 20px;\">\n      <tr>\n        <td>\n          <h2 style=\"font-size: 20px; margin-top: 0;\">Monthly Trend</h2>\n          <table width=\"100%\" border=\"0\" cellpadding=\"0\" cellspacing=\"0\">\n            <tr>\n              <td style=\"background-color: #f0f0f0; padding: 10px; border-bottom: 1px solid #ddd;\">Month</td>\n              <td style=\"background-color: #f0f0f0; padding: 10px; border-bottom: 1px solid #ddd;\">Revenue</td>\n            </tr>\n            <tr>\n              <td style=\"padding: 10px; border-bottom: 1px solid #ddd;\">January 2024</td>\n              <td style=\"padding: 10px; border-bottom: 1px solid #ddd;\">₨ 420,000</td>\n            </tr>\n            <tr>\n              <td style=\"padding: 10px; border-bottom: 1px solid #ddd;\">February 2024</td>\n              <td style=\"padding: 10px; border-bottom: 1px solid #ddd;\">₨ 287,000</td>\n            </tr>\n            <tr>\n              <td style=\"padding: 10px; border-bottom: 1px solid #ddd;\">March 2024</td>\n              <td style=\"padding: 10px; border-bottom: 1px solid #ddd;\">₨ 344,000</td>\n            </tr>\n            <tr>\n              <td style=\"padding: 10px; border-bottom: 1px solid #ddd;\">April 2024</td>\n              <td style=\"padding: 10px; border-bottom: 1px solid #ddd;\">₨ 164,000</td>\n            </tr>\n            <tr>\n              <td style=\"padding: 10px; border-bottom: 1px solid #ddd;\">May 2024</td>\n              <td style=\"padding: 10px; border-bottom: 1px solid #ddd;\">₨ 86,000</td>\n            </tr>\n            <tr>\n              <td style=\"padding: 10px; border-bottom: 1px solid #ddd;\">June 2024</td>\n              <td style=\"padding: 10px; border-bottom: 1px solid #ddd;\">₨ 238,000</td>\n            </tr>\n          </table>\n        </td>\n      </tr>\n    </table>\n    <table width=\"100%\" border=\"0\" cellpadding=\"0\" cellspacing=\"0\" style=\"padding: 20px;\">\n      <tr>\n        <td>\n          <h2 style=\"font-size: 20px; margin-top: 0;\">Top Products</h2>\n          <table width=\"100%\" border=\"0\" cellpadding=\"0\" cellspacing=\"0\">\n            <tr>\n              <td style=\"background-color: #f0f0f0; padding: 10px; border-bottom: 1px solid #ddd;\">Product</td>\n              <td style=\"background-color: #f0f0f0; padding: 10px; border-bottom: 1px solid #ddd;\">Revenue</td>\n            </tr>\n            <tr>\n              <td style=\"padding: 10px; border-bottom: 1px solid #ddd;\">Laptop Pro</td>\n              <td style=\"padding: 10px; border-bottom: 1px solid #ddd;\">₨ 625,000</td>\n            </tr>\n            <tr>\n              <td style=\"padding: 10px; border-bottom: 1px solid #ddd;\">Standing Desk</td>\n              <td style=\"padding: 10px; border-bottom: 1px solid #ddd;\">₨ 180,000</td>\n            </tr>\n            <tr>\n              <td style=\"padding: 10px; border-bottom: 1px solid #ddd;\">Office Desk</td>\n              <td style=\"padding: 10px; border-bottom: 1px solid #ddd;\">₨ 110,000</td>\n            </tr>\n          </table>\n        </td>\n      </tr>\n    </table>\n    <table width=\"100%\" border=\"0\" cellpadding=\"0\" cellspacing=\"0\" style=\"padding: 20px;\">\n      <tr>\n        <td>\n          <h2 style=\"font-size: 20px; margin-top: 0;\">Top Regions</h2>\n          <table width=\"100%\" border=\"0\" cellpadding=\"0\" cellspacing=\"0\">\n            <tr>\n              <td style=\"background-color: #f0f0f0; padding: 10px; border-bottom: 1px solid #ddd;\">Region</td>\n              <td style=\"background-color: #f0f0f0; padding: 10px; border-bottom: 1px solid #ddd;\">Revenue</td>\n            </tr>\n            <tr>\n              <td style=\"padding: 10px; border-bottom: 1px solid #ddd;\">North</td>\n              <td style=\"padding: 10px; border-bottom: 1px solid #ddd;\">₨ 643,000</td>\n            </tr>\n            <tr>\n              <td style=\"padding: 10px; border-bottom: 1px solid #ddd;\">East</td>\n              <td style=\"padding: 10px; border-bottom: 1px solid #ddd;\">₨ 525,000</td>\n            </tr>\n            <tr>\n              <td style=\"padding: 10px; border-bottom: 1px solid #ddd;\">South</td>\n              <td style=\"padding: 10px; border-bottom: 1px solid #ddd;\">₨ 248,000</td>\n            </tr>\n            <tr>\n              <td style=\"padding: 10px; border-bottom: 1px solid #ddd;\">West</td>\n              <td style=\"padding: 10px; border-bottom: 1px solid #ddd;\">₨ 123,000</td>\n            </tr>\n          </table>\n        </td>\n      </tr>\n    </table>\n    <table width=\"100%\" border=\"0\" cellpadding=\"0\" cellspacing=\"0\" style=\"padding: 20px;\">\n      <tr>\n        <td>\n          <h2 style=\"font-size: 20px; margin-top: 0;\">AI Recommendations</h2>\n          <p style=\"font-size: 16px;\">Based on the current trends and data, we recommend focusing on the North region and promoting the Laptop Pro product to maximize revenue and profit.</p>\n        </td>\n      </tr>\n    </table>\n  </body>\n</html>"
+        },
+        "pairedItem": {
+          "item": 0
+        }
+      }
+    ],
+    "Code in JavaScript": [
+      {
+        "json": {
+          "html_report": "<html>\n  <body style=\"margin: 0; padding: 0; font-family: Arial, sans-serif;\">\n    <table width=\"100%\" border=\"0\" cellpadding=\"0\" cellspacing=\"0\" style=\"background-color: #1a1a2e; color: #ffffff; padding: 20px; text-align: center;\">\n      <tr>\n        <td>\n          <h1 style=\"font-size: 24px; margin: 0;\">Weekly KPI Report</h1>\n          <p style=\"font-size: 16px; margin: 0;\">Report Date: 2026-08-04T18:32:46.870Z</p>\n        </td>\n      </tr>\n    </table>\n    <table width=\"100%\" border=\"0\" cellpadding=\"0\" cellspacing=\"0\" style=\"padding: 20px;\">\n      <tr>\n        <td>\n          <h2 style=\"font-size: 20px; margin-top: 0;\">Executive Summary</h2>\n          <p style=\"font-size: 16px;\">Our weekly revenue stands at ₨ 1,539,000 with a total profit of ₨ 384,750, resulting in a profit margin of 25%. We have seen a significant month-over-month growth of 176.74%.</p>\n        </td>\n      </tr>\n    </table>\n    <table width=\"100%\" border=\"0\" cellpadding=\"0\" cellspacing=\"0\" style=\"padding: 20px;\">\n      <tr>\n        <td>\n          <h2 style=\"font-size: 20px; margin-top: 0;\">KPI Cards</h2>\n        </td>\n      </tr>\n      <tr>\n        <td>\n          <table width=\"100%\" border=\"0\" cellpadding=\"0\" cellspacing=\"0\">\n            <tr>\n              <td style=\"width: 25%; background-color: #4CAF50; color: #ffffff; padding: 10px; border-radius: 5px;\">\n                <h3 style=\"font-size: 16px; margin: 0;\">Total Revenue</h3>\n                <p style=\"font-size: 24px; margin: 0;\">₨ 1,539,000</p>\n              </td>\n              <td style=\"width: 25%; background-color: #03A9F4; color: #ffffff; padding: 10px; border-radius: 5px;\">\n                <h3 style=\"font-size: 16px; margin: 0;\">Total Profit</h3>\n                <p style=\"font-size: 24px; margin: 0;\">₨ 384,750</p>\n              </td>\n              <td style=\"width: 25%; background-color: #FF9800; color: #ffffff; padding: 10px; border-radius: 5px;\">\n                <h3 style=\"font-size: 16px; margin: 0;\">Profit Margin</h3>\n                <p style=\"font-size: 24px; margin: 0;\">25%</p>\n              </td>\n              <td style=\"width: 25%; background-color: #E91E63; color: #ffffff; padding: 10px; border-radius: 5px;\">\n                <h3 style=\"font-size: 16px; margin: 0;\">Avg Order Value</h3>\n                <p style=\"font-size: 24px; margin: 0;\">₨ 76,950</p>\n              </td>\n            </tr>\n          </table>\n        </td>\n      </tr>\n    </table>\n    <table width=\"100%\" border=\"0\" cellpadding=\"0\" cellspacing=\"0\" style=\"padding: 20px;\">\n      <tr>\n        <td>\n          <h2 style=\"font-size: 20px; margin-top: 0;\">Monthly Trend</h2>\n          <table width=\"100%\" border=\"0\" cellpadding=\"0\" cellspacing=\"0\">\n            <tr>\n              <td style=\"background-color: #f0f0f0; padding: 10px; border-bottom: 1px solid #ddd;\">Month</td>\n              <td style=\"background-color: #f0f0f0; padding: 10px; border-bottom: 1px solid #ddd;\">Revenue</td>\n            </tr>\n            <tr>\n              <td style=\"padding: 10px; border-bottom: 1px solid #ddd;\">January 2024</td>\n              <td style=\"padding: 10px; border-bottom: 1px solid #ddd;\">₨ 420,000</td>\n            </tr>\n            <tr>\n              <td style=\"padding: 10px; border-bottom: 1px solid #ddd;\">February 2024</td>\n              <td style=\"padding: 10px; border-bottom: 1px solid #ddd;\">₨ 287,000</td>\n            </tr>\n            <tr>\n              <td style=\"padding: 10px; border-bottom: 1px solid #ddd;\">March 2024</td>\n              <td style=\"padding: 10px; border-bottom: 1px solid #ddd;\">₨ 344,000</td>\n            </tr>\n            <tr>\n              <td style=\"padding: 10px; border-bottom: 1px solid #ddd;\">April 2024</td>\n              <td style=\"padding: 10px; border-bottom: 1px solid #ddd;\">₨ 164,000</td>\n            </tr>\n            <tr>\n              <td style=\"padding: 10px; border-bottom: 1px solid #ddd;\">May 2024</td>\n              <td style=\"padding: 10px; border-bottom: 1px solid #ddd;\">₨ 86,000</td>\n            </tr>\n            <tr>\n              <td style=\"padding: 10px; border-bottom: 1px solid #ddd;\">June 2024</td>\n              <td style=\"padding: 10px; border-bottom: 1px solid #ddd;\">₨ 238,000</td>\n            </tr>\n          </table>\n        </td>\n      </tr>\n    </table>\n    <table width=\"100%\" border=\"0\" cellpadding=\"0\" cellspacing=\"0\" style=\"padding: 20px;\">\n      <tr>\n        <td>\n          <h2 style=\"font-size: 20px; margin-top: 0;\">Top Products</h2>\n          <table width=\"100%\" border=\"0\" cellpadding=\"0\" cellspacing=\"0\">\n            <tr>\n              <td style=\"background-color: #f0f0f0; padding: 10px; border-bottom: 1px solid #ddd;\">Product</td>\n              <td style=\"background-color: #f0f0f0; padding: 10px; border-bottom: 1px solid #ddd;\">Revenue</td>\n            </tr>\n            <tr>\n              <td style=\"padding: 10px; border-bottom: 1px solid #ddd;\">Laptop Pro</td>\n              <td style=\"padding: 10px; border-bottom: 1px solid #ddd;\">₨ 625,000</td>\n            </tr>\n            <tr>\n              <td style=\"padding: 10px; border-bottom: 1px solid #ddd;\">Standing Desk</td>\n              <td style=\"padding: 10px; border-bottom: 1px solid #ddd;\">₨ 180,000</td>\n            </tr>\n            <tr>\n              <td style=\"padding: 10px; border-bottom: 1px solid #ddd;\">Office Desk</td>\n              <td style=\"padding: 10px; border-bottom: 1px solid #ddd;\">₨ 110,000</td>\n            </tr>\n          </table>\n        </td>\n      </tr>\n    </table>\n    <table width=\"100%\" border=\"0\" cellpadding=\"0\" cellspacing=\"0\" style=\"padding: 20px;\">\n      <tr>\n        <td>\n          <h2 style=\"font-size: 20px; margin-top: 0;\">Top Regions</h2>\n          <table width=\"100%\" border=\"0\" cellpadding=\"0\" cellspacing=\"0\">\n            <tr>\n              <td style=\"background-color: #f0f0f0; padding: 10px; border-bottom: 1px solid #ddd;\">Region</td>\n              <td style=\"background-color: #f0f0f0; padding: 10px; border-bottom: 1px solid #ddd;\">Revenue</td>\n            </tr>\n            <tr>\n              <td style=\"padding: 10px; border-bottom: 1px solid #ddd;\">North</td>\n              <td style=\"padding: 10px; border-bottom: 1px solid #ddd;\">₨ 643,000</td>\n            </tr>\n            <tr>\n              <td style=\"padding: 10px; border-bottom: 1px solid #ddd;\">East</td>\n              <td style=\"padding: 10px; border-bottom: 1px solid #ddd;\">₨ 525,000</td>\n            </tr>\n            <tr>\n              <td style=\"padding: 10px; border-bottom: 1px solid #ddd;\">South</td>\n              <td style=\"padding: 10px; border-bottom: 1px solid #ddd;\">₨ 248,000</td>\n            </tr>\n            <tr>\n              <td style=\"padding: 10px; border-bottom: 1px solid #ddd;\">West</td>\n              <td style=\"padding: 10px; border-bottom: 1px solid #ddd;\">₨ 123,000</td>\n            </tr>\n          </table>\n        </td>\n      </tr>\n    </table>\n    <table width=\"100%\" border=\"0\" cellpadding=\"0\" cellspacing=\"0\" style=\"padding: 20px;\">\n      <tr>\n        <td>\n          <h2 style=\"font-size: 20px; margin-top: 0;\">AI Recommendations</h2>\n          <p style=\"font-size: 16px;\">Based on the current trends and data, we recommend focusing on the North region and promoting the Laptop Pro product to maximize revenue and profit.</p>\n        </td>\n      </tr>\n    </table>\n  </body>\n</html>"
+        },
+        "pairedItem": {
+          "item": 0
+        }
+      }
+    ]
+  },
+  "connections": {
+    "Schedule Trigger": {
+      "main": [
+        [
+          {
+            "node": "Fact_Sales",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "Dim_Date",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "Dim_Customer",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "Dim_Product",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "Dim_Region",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Dim_Product": {
+      "main": [
+        [
+          {
+            "node": "Merge",
+            "type": "main",
+            "index": 3
+          }
+        ]
+      ]
+    },
+    "Fact_Sales": {
+      "main": [
+        [
+          {
+            "node": "Merge",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Dim_Date": {
+      "main": [
+        [
+          {
+            "node": "Merge",
+            "type": "main",
+            "index": 1
+          }
+        ]
+      ]
+    },
+    "Dim_Customer": {
+      "main": [
+        [
+          {
+            "node": "Merge",
+            "type": "main",
+            "index": 2
+          }
+        ]
+      ]
+    },
+    "Dim_Region": {
+      "main": [
+        [
+          {
+            "node": "Merge",
+            "type": "main",
+            "index": 4
+          }
+        ]
+      ]
+    },
+    "Merge": {
+      "main": [
+        [
+          {
+            "node": "Dax Calculation",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Dax Calculation": {
+      "main": [
+        [
+          {
+            "node": "Wait",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Wait": {
+      "main": [
+        [
+          {
+            "node": "Basic LLM Chain",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Groq Chat Model": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "Basic LLM Chain",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Basic LLM Chain": {
+      "main": [
+        [
+          {
+            "node": "Code in JavaScript",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Code in JavaScript": {
+      "main": [
+        [
+          {
+            "node": "Send a message",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": false,
+  "settings": {
+    "executionOrder": "v1",
+    "binaryMode": "separate",
+    "availableInMCP": false
+  },
+  "versionId": "",
+  "meta": {
+    "templateCredsSetupCompleted": true,
+    "instanceId": ""
+  },
+  "nodeGroups": [],
+  "id": "",
+  "tags": []
+}
