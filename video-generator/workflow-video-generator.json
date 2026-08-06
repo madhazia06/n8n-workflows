@@ -1,0 +1,459 @@
+{
+  "name": "workflow-video-generation",
+  "nodes": [
+    {
+      "parameters": {
+        "formTitle": "Idea Generation",
+        "formDescription": "Write the idea below for which you want to generate the video.",
+        "formFields": {
+          "values": [
+            {
+              "fieldLabel": "Idea",
+              "requiredField": true
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.formTrigger",
+      "typeVersion": 2.6,
+      "position": [
+        -448,
+        -128
+      ],
+      "id": "ca1b9d11-c4b3-4b36-aa2a-dce2c9a3baaf",
+      "name": "On form submission",
+      "webhookId": "6d7578b3-5109-4517-9a63-afbe173cf274"
+    },
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "=Write a 10-second video scene for the following idea:\n\n{{ $json.Idea }}\n\nMake it scroll-stopping, visually concrete, and emotionally immediate.",
+        "messages": {
+          "messageValues": [
+            {
+              "message": "You are a creative video scriptwriter specializing in short-form content. Your job is to write a single punchy scene for a 10-second video.\n\nYour output must follow this exact structure:\n\n**SCENE:**\n[One vivid, specific visual description of what's on screen. Max 2 sentences.]\n\n**VOICEOVER / TEXT ON SCREEN:**\n[The spoken line or text overlay. Must be under 20 words — readable in 10 seconds.]\n\n**MOOD & STYLE:**\n[One line: tone, color palette, and pacing. E.g. \"Dark, high-contrast, fast cuts.\"]\n\n**HOOK:**\n[Why this grabs attention in the first 2 seconds.]\n\nKeep it punchy. No fluff. Every word earns its place."
+            }
+          ]
+        },
+        "batching": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.chainLlm",
+      "typeVersion": 1.9,
+      "position": [
+        -272,
+        -128
+      ],
+      "id": "44c338c2-d74a-4a0f-ae16-ab98cb4ea2d8",
+      "name": "Basic LLM Chain"
+    },
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "=Convert the following 10-second video scene into AI video generation prompts:\n\n{{ $json.text }}\n\nOptimize for maximum visual clarity and cinematic impact.",
+        "messages": {
+          "messageValues": [
+            {
+              "message": "You are an expert prompt engineer specializing in AI video generation tools \nlike Runway, Kling, Pika, and Hailuo.\n\nYour job is to convert a written video scene into optimized generation prompts.\n\nYour output must follow this exact structure:\n\n**VISUAL PROMPT:**\n[A dense, comma-separated description for the video model. Include: subject, action, \nenvironment, lighting, camera angle, camera motion, art style, and mood. \nMax 80 words. No sentences — just descriptive phrases.]\n\n**NEGATIVE PROMPT:**\n[What to avoid. E.g. \"blurry, watermark, text on screen, bad hands, low quality, \nstatic camera, overexposed, cluttered background\"]\n\n**CAMERA MOTION:**\n[One specific instruction. E.g. \"Slow push-in on subject\" / \"Quick pan left to right\" \n/ \"Handheld shaky close-up\"]\n\n**DURATION & PACING:**\n[10 seconds. Describe how the motion should feel — slow burn, fast cuts, single \ncontinuous shot, etc.]\n\n**STYLE REFERENCE:**\n[One cinematic or aesthetic reference. E.g. \"Shot like a Nike commercial\" / \n\"Cyberpunk noir, neon-lit streets\" / \"Raw, documentary handheld feel\"]\n\nBe specific. Vague prompts produce vague videos. Every phrase should push \nthe model toward a precise visual output."
+            }
+          ]
+        },
+        "batching": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.chainLlm",
+      "typeVersion": 1.9,
+      "position": [
+        32,
+        -128
+      ],
+      "id": "703e0c46-9899-4fe5-b7f2-71fdf4a6cb05",
+      "name": "Basic LLM Chain1"
+    },
+    {
+      "parameters": {
+        "model": "llama-3.3-70b-versatile",
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatGroq",
+      "typeVersion": 1,
+      "position": [
+        -352,
+        80
+      ],
+      "id": "71a13c98-b200-48d2-8d62-2e488c4463a7",
+      "name": "Groq Chat Model",
+      "credentials": {
+        "groqApi": {
+          "id": "Zaeks7UhafaJJEa9",
+          "name": "Groq account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "model": "llama-3.3-70b-versatile",
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatGroq",
+      "typeVersion": 1,
+      "position": [
+        -32,
+        80
+      ],
+      "id": "eee04bf4-a291-4526-ad73-d45cf58aa695",
+      "name": "Groq Chat Model1",
+      "credentials": {
+        "groqApi": {
+          "id": "Zaeks7UhafaJJEa9",
+          "name": "Groq account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "amount": 10
+      },
+      "type": "n8n-nodes-base.wait",
+      "typeVersion": 1.1,
+      "position": [
+        592,
+        -128
+      ],
+      "id": "801339b9-f541-4ea6-9b6b-ea9123739b89",
+      "name": "Wait",
+      "webhookId": "60950a9d-43e8-4aec-af17-f47f4e53206d"
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://api.magichour.ai/v1/text-to-video",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "Authorization",
+              "value": "Bearer mhk_live_FNTmlLCqGXqkEjgmhDt9eTs8NMAMTqcIajuiZ7okD4BXYtGmGQhqvbkWG8WgqH6rJCzYuNb5xiIZHw2W"
+            },
+            {
+              "name": "Content-type",
+              "value": "application/json"
+            }
+          ]
+        },
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={{ JSON.stringify({ name: \"output\", end_seconds: 5, aspect_ratio: \"16:9\", audio: true, style: { prompt: $json.text } }) }}",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.4,
+      "position": [
+        384,
+        -128
+      ],
+      "id": "0c63eb88-3ee3-4af3-a68c-4d16443692da",
+      "name": "POST Node"
+    },
+    {
+      "parameters": {
+        "url": "=https://api.magichour.ai/v1/video-projects/{{ $('POST Node').item.json.id }}",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "Authorization",
+              "value": "Bearer mhk_live_FNTmlLCqGXqkEjgmhDt9eTs8NMAMTqcIajuiZ7okD4BXYtGmGQhqvbkWG8WgqH6rJCzYuNb5xiIZHw2W"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.4,
+      "position": [
+        800,
+        -128
+      ],
+      "id": "451e3a4a-8c24-44a2-b3dd-9ec7b5cd1e94",
+      "name": "GET Node"
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 3
+          },
+          "conditions": [
+            {
+              "id": "28c4c4cf-5895-457a-aa65-84cce402d32f",
+              "leftValue": "={{ $json.status }}",
+              "rightValue": "complete",
+              "operator": {
+                "type": "string",
+                "operation": "equals"
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.3,
+      "position": [
+        1008,
+        -128
+      ],
+      "id": "d6d8bb2d-2b43-4257-b583-81629ad0371f",
+      "name": "If"
+    },
+    {
+      "parameters": {
+        "url": "={{ $('GET Node').item.json.downloads[0].url }}",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.4,
+      "position": [
+        1216,
+        -200.5
+      ],
+      "id": "35b343b0-b119-4f6e-bd79-a096fc912af1",
+      "name": "HTTP Request"
+    },
+    {
+      "parameters": {
+        "operation": "append",
+        "documentId": {
+          "__rl": true,
+          "value": "1bHtRpDyOUGIJWhsqi7_7OLOBtj0FUlyxGv9uRkC3zlY",
+          "mode": "list",
+          "cachedResultName": "Videos_Info",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1bHtRpDyOUGIJWhsqi7_7OLOBtj0FUlyxGv9uRkC3zlY/edit?usp=drivesdk"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": "gid=0",
+          "mode": "list",
+          "cachedResultName": "Sheet1",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1bHtRpDyOUGIJWhsqi7_7OLOBtj0FUlyxGv9uRkC3zlY/edit#gid=0"
+        },
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "URLS": "={{ $json.download.url }}"
+          },
+          "matchingColumns": [
+            "URLS"
+          ],
+          "schema": [
+            {
+              "id": "URLS",
+              "displayName": "URLS",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": false
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.7,
+      "position": [
+        1488,
+        -272
+      ],
+      "id": "e684d6ec-8289-4564-8873-ca93c70b3654",
+      "name": "Append row in sheet",
+      "credentials": {
+        "googleSheetsOAuth2Api": {
+          "id": "kVsngEfG30f662dB",
+          "name": "Google Sheets account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "name": "={{ $('HTTP Request').item.json.name }}_{{ $now }}.mp4",
+        "driveId": {
+          "__rl": true,
+          "mode": "list",
+          "value": "My Drive"
+        },
+        "folderId": {
+          "__rl": true,
+          "mode": "list",
+          "value": "root",
+          "cachedResultName": "/ (Root folder)"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.googleDrive",
+      "typeVersion": 3,
+      "position": [
+        1488,
+        -112
+      ],
+      "id": "b79d9336-f5dd-458d-ba03-b8d2e3ba4a26",
+      "name": "Upload file",
+      "credentials": {
+        "googleDriveOAuth2Api": {
+          "id": "M3zULlWCL5eJnnxe",
+          "name": "Google Drive account"
+        }
+      }
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "On form submission": {
+      "main": [
+        [
+          {
+            "node": "Basic LLM Chain",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Basic LLM Chain": {
+      "main": [
+        [
+          {
+            "node": "Basic LLM Chain1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Groq Chat Model": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "Basic LLM Chain",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Groq Chat Model1": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "Basic LLM Chain1",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Basic LLM Chain1": {
+      "main": [
+        [
+          {
+            "node": "POST Node",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Wait": {
+      "main": [
+        [
+          {
+            "node": "GET Node",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "POST Node": {
+      "main": [
+        [
+          {
+            "node": "Wait",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "GET Node": {
+      "main": [
+        [
+          {
+            "node": "If",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "If": {
+      "main": [
+        [
+          {
+            "node": "HTTP Request",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Wait",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "HTTP Request": {
+      "main": [
+        [
+          {
+            "node": "Append row in sheet",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "Upload file",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Append row in sheet": {
+      "main": [
+        []
+      ]
+    }
+  },
+  "active": false,
+  "settings": {
+    "executionOrder": "v1",
+    "binaryMode": "separate"
+  },
+  "versionId": "2dfab525-567c-4f13-b34d-6b47c955662a",
+  "meta": {
+    "templateCredsSetupCompleted": true,
+    "instanceId": "8f22964d0b8b72148f321f6f90750b85a19614511fef0df527cf6d7e9a0f6af3"
+  },
+  "nodeGroups": [],
+  "id": "9et9Wfdo53t6nm4A",
+  "tags": []
+}
