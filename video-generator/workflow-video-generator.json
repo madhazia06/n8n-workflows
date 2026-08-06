@@ -21,9 +21,9 @@
         -448,
         -128
       ],
-      "id": "ca1b9d11-c4b3-4b36-aa2a-dce2c9a3baaf",
+      "id": "",
       "name": "On form submission",
-      "webhookId": "6d7578b3-5109-4517-9a63-afbe173cf274"
+      "webhookId": ""
     },
     {
       "parameters": {
@@ -44,7 +44,7 @@
         -272,
         -128
       ],
-      "id": "44c338c2-d74a-4a0f-ae16-ab98cb4ea2d8",
+      "id": "",
       "name": "Basic LLM Chain"
     },
     {
@@ -66,7 +66,7 @@
         32,
         -128
       ],
-      "id": "703e0c46-9899-4fe5-b7f2-71fdf4a6cb05",
+      "id": "",
       "name": "Basic LLM Chain1"
     },
     {
@@ -80,11 +80,11 @@
         -352,
         80
       ],
-      "id": "71a13c98-b200-48d2-8d62-2e488c4463a7",
+      "id": "",
       "name": "Groq Chat Model",
       "credentials": {
         "groqApi": {
-          "id": "Zaeks7UhafaJJEa9",
+          "id": "",
           "name": "Groq account"
         }
       }
@@ -104,7 +104,7 @@
       "name": "Groq Chat Model1",
       "credentials": {
         "groqApi": {
-          "id": "Zaeks7UhafaJJEa9",
+          "id": "",
           "name": "Groq account"
         }
       }
@@ -119,9 +119,9 @@
         592,
         -128
       ],
-      "id": "801339b9-f541-4ea6-9b6b-ea9123739b89",
+      "id": "",
       "name": "Wait",
-      "webhookId": "60950a9d-43e8-4aec-af17-f47f4e53206d"
+      "webhookId": ""
     },
     {
       "parameters": {
@@ -132,7 +132,7 @@
           "parameters": [
             {
               "name": "Authorization",
-              "value": "Bearer mhk_live_FNTmlLCqGXqkEjgmhDt9eTs8NMAMTqcIajuiZ7okD4BXYtGmGQhqvbkWG8WgqH6rJCzYuNb5xiIZHw2W"
+              "value": "Bearer MAGIC_HOUR_API_KEY"
             },
             {
               "name": "Content-type",
@@ -151,7 +151,7 @@
         384,
         -128
       ],
-      "id": "0c63eb88-3ee3-4af3-a68c-4d16443692da",
+      "id": "",
       "name": "POST Node"
     },
     {
@@ -162,7 +162,7 @@
           "parameters": [
             {
               "name": "Authorization",
-              "value": "Bearer mhk_live_FNTmlLCqGXqkEjgmhDt9eTs8NMAMTqcIajuiZ7okD4BXYtGmGQhqvbkWG8WgqH6rJCzYuNb5xiIZHw2W"
+              "value": "Bearer MAGIC_HOUR_API_KEY"
             }
           ]
         },
@@ -174,7 +174,7 @@
         800,
         -128
       ],
-      "id": "451e3a4a-8c24-44a2-b3dd-9ec7b5cd1e94",
+      "id": "",
       "name": "GET Node"
     },
     {
@@ -188,7 +188,7 @@
           },
           "conditions": [
             {
-              "id": "28c4c4cf-5895-457a-aa65-84cce402d32f",
+              "id": "",
               "leftValue": "={{ $json.status }}",
               "rightValue": "complete",
               "operator": {
@@ -207,7 +207,7 @@
         1008,
         -128
       ],
-      "id": "d6d8bb2d-2b43-4257-b583-81629ad0371f",
+      "id": "",
       "name": "If"
     },
     {
@@ -221,7 +221,7 @@
         1216,
         -200.5
       ],
-      "id": "35b343b0-b119-4f6e-bd79-a096fc912af1",
+      "id": "",
       "name": "HTTP Request"
     },
     {
@@ -229,17 +229,17 @@
         "operation": "append",
         "documentId": {
           "__rl": true,
-          "value": "1bHtRpDyOUGIJWhsqi7_7OLOBtj0FUlyxGv9uRkC3zlY",
+          "value": "",
           "mode": "list",
           "cachedResultName": "Videos_Info",
-          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1bHtRpDyOUGIJWhsqi7_7OLOBtj0FUlyxGv9uRkC3zlY/edit?usp=drivesdk"
+          "cachedResultUrl": ""
         },
         "sheetName": {
           "__rl": true,
           "value": "gid=0",
           "mode": "list",
           "cachedResultName": "Sheet1",
-          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1bHtRpDyOUGIJWhsqi7_7OLOBtj0FUlyxGv9uRkC3zlY/edit#gid=0"
+          "cachedResultUrl": ""
         },
         "columns": {
           "mappingMode": "defineBelow",
@@ -272,11 +272,11 @@
         1488,
         -272
       ],
-      "id": "e684d6ec-8289-4564-8873-ca93c70b3654",
+      "id": "",
       "name": "Append row in sheet",
       "credentials": {
         "googleSheetsOAuth2Api": {
-          "id": "kVsngEfG30f662dB",
+          "id": "",
           "name": "Google Sheets account"
         }
       }
@@ -303,11 +303,11 @@
         1488,
         -112
       ],
-      "id": "b79d9336-f5dd-458d-ba03-b8d2e3ba4a26",
+      "id": "",
       "name": "Upload file",
       "credentials": {
         "googleDriveOAuth2Api": {
-          "id": "M3zULlWCL5eJnnxe",
+          "id": "",
           "name": "Google Drive account"
         }
       }
@@ -448,12 +448,12 @@
     "executionOrder": "v1",
     "binaryMode": "separate"
   },
-  "versionId": "2dfab525-567c-4f13-b34d-6b47c955662a",
+  "versionId": "",
   "meta": {
     "templateCredsSetupCompleted": true,
-    "instanceId": "8f22964d0b8b72148f321f6f90750b85a19614511fef0df527cf6d7e9a0f6af3"
+    "instanceId": ""
   },
   "nodeGroups": [],
-  "id": "9et9Wfdo53t6nm4A",
+  "id": "",
   "tags": []
 }
