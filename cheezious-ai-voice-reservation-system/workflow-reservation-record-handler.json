@@ -1,0 +1,302 @@
+{
+  "name": "workflow-cheezious-voice-agent",
+  "nodes": [
+    {
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "check_reservation",
+        "responseMode": "responseNode",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 2.1,
+      "position": [
+        -320,
+        -144
+      ],
+      "id": "917a7a31-2489-4e94-a419-7e40e6521430",
+      "name": "check_reservation",
+      "webhookId": "9a0315c3-5ae1-494b-a4e7-cdfce93d0d13"
+    },
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "=Check availability details:\nDate: {{ $json.body.date }}\nTime: {{ $json.body.time }}",
+        "options": {
+          "systemMessage": "=Get Appointment: Use this tool to check the current appointment.\nCurrent time/date : {{ $now.format('yyyy-MM-dd')}}"
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.agent",
+      "typeVersion": 3.1,
+      "position": [
+        -96,
+        -144
+      ],
+      "id": "1bf6be3e-0117-4dbb-8cd1-d989a2705ee1",
+      "name": "AI Agent"
+    },
+    {
+      "parameters": {
+        "model": "llama-3.3-70b-versatile",
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatGroq",
+      "typeVersion": 1,
+      "position": [
+        -240,
+        64
+      ],
+      "id": "9d48c17c-e205-468b-9f9c-9d48dbead238",
+      "name": "Groq Chat Model",
+      "credentials": {
+        "groqApi": {
+          "id": "GgFDYZ8WWItH4ilv",
+          "name": "Groq account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "operation": "getAll",
+        "calendar": {
+          "__rl": true,
+          "value": "zia170106@gmail.com",
+          "mode": "list",
+          "cachedResultName": "zia170106@gmail.com"
+        },
+        "limit": "={{ /*n8n-auto-generated-fromAI-override*/ $fromAI('Limit', ``, 'number') }}",
+        "timeMin": "={{ /*n8n-auto-generated-fromAI-override*/ $fromAI('After', ``, 'string') }}",
+        "timeMax": "={{ /*n8n-auto-generated-fromAI-override*/ $fromAI('Before', ``, 'string') }}",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.googleCalendarTool",
+      "typeVersion": 1.3,
+      "position": [
+        64,
+        64
+      ],
+      "id": "40654611-9146-4036-9e5a-2d758bc59d3e",
+      "name": "Get Appointment",
+      "credentials": {
+        "googleCalendarOAuth2Api": {
+          "id": "cHnvjzboDtdcOiyv",
+          "name": "Google Calendar account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "options": {}
+      },
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1.5,
+      "position": [
+        272,
+        -144
+      ],
+      "id": "222b4c3f-41d1-4b52-8ea3-fc4c57ec48cc",
+      "name": "Respond to Webhook"
+    },
+    {
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "book_reservation",
+        "responseMode": "responseNode",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 2.1,
+      "position": [
+        -352,
+        256
+      ],
+      "id": "ed212205-8b9c-4ba5-8b9c-f1d4046e1af7",
+      "name": "book_reservation",
+      "webhookId": "4947e3cd-0134-4aca-b5b3-cc2989f1ae68"
+    },
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "=Booking reservation details:\n\nname:{{ $json.body.name }}\ndate:{{ $json.body.date }}\ntime:{{ $json.body.time }}\nnumber of people:{{ $json.body.number_of_people }}",
+        "options": {
+          "systemMessage": "=You are a customer support agent for restaurant name \"Cheezious\". You are designed to handle various task efficiently, your primary goal is to book reservation for Cheezious. You have access to multiple tools to help you fulfill request. The appointments are 1 hour long in length.\n\n#Tools\n- Create Appointment: Use this tool to create reservation or appointment.\nKeep responses concise, short and relevant to user's question\n\nHere's the current time/date : {{ $now.format('yyyy-MM-dd') }}"
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.agent",
+      "typeVersion": 3.1,
+      "position": [
+        -128,
+        256
+      ],
+      "id": "8723b17c-039a-4649-8a67-45931f1d68d7",
+      "name": "AI Agent1"
+    },
+    {
+      "parameters": {
+        "model": "llama-3.3-70b-versatile",
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatGroq",
+      "typeVersion": 1,
+      "position": [
+        -128,
+        448
+      ],
+      "id": "2c833e80-3de1-4d3a-9376-aa577d252ac2",
+      "name": "Groq Chat Model1",
+      "credentials": {
+        "groqApi": {
+          "id": "GgFDYZ8WWItH4ilv",
+          "name": "Groq account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "calendar": {
+          "__rl": true,
+          "value": "zia170106@gmail.com",
+          "mode": "list",
+          "cachedResultName": "zia170106@gmail.com"
+        },
+        "start": "={{ /*n8n-auto-generated-fromAI-override*/ $fromAI('Start', ``, 'string') }}",
+        "end": "={{ /*n8n-auto-generated-fromAI-override*/ $fromAI('End', ``, 'string') }}",
+        "additionalFields": {
+          "summary": "={{ /*n8n-auto-generated-fromAI-override*/ $fromAI('Summary', ``, 'string') }}"
+        }
+      },
+      "type": "n8n-nodes-base.googleCalendarTool",
+      "typeVersion": 1.3,
+      "position": [
+        80,
+        448
+      ],
+      "id": "a692a83e-9964-4286-b50f-aa4e60d5287b",
+      "name": "Create Appointment",
+      "credentials": {
+        "googleCalendarOAuth2Api": {
+          "id": "cHnvjzboDtdcOiyv",
+          "name": "Google Calendar account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "options": {}
+      },
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1.5,
+      "position": [
+        240,
+        256
+      ],
+      "id": "417175a5-a8ff-490d-9a08-e7e7b9e977e7",
+      "name": "Respond to Webhook1"
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "check_reservation": {
+      "main": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Groq Chat Model": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Get Appointment": {
+      "ai_tool": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "AI Agent": {
+      "main": [
+        [
+          {
+            "node": "Respond to Webhook",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "book_reservation": {
+      "main": [
+        [
+          {
+            "node": "AI Agent1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Groq Chat Model1": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "AI Agent1",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Create Appointment": {
+      "ai_tool": [
+        [
+          {
+            "node": "AI Agent1",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "AI Agent1": {
+      "main": [
+        [
+          {
+            "node": "Respond to Webhook1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": false,
+  "settings": {
+    "executionOrder": "v1",
+    "binaryMode": "separate",
+    "availableInMCP": false
+  },
+  "versionId": "31cdef54-a3d7-4932-9e0e-7e67b042b6c4",
+  "meta": {
+    "templateCredsSetupCompleted": true,
+    "instanceId": "bf97ca853d23ec1cfe5d7aa44cccf6bd766f11c1cbaa7b08b5a04cd5e3aaa59b"
+  },
+  "nodeGroups": [],
+  "id": "1p8cSJjBGTv3XIaW",
+  "tags": []
+}

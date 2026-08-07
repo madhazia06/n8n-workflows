@@ -1,0 +1,160 @@
+{
+  "name": "workflow-cheezious-order-reservation-bot",
+  "nodes": [
+    {
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "reservation_cheezious",
+        "responseMode": "responseNode",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 2.1,
+      "position": [
+        -352,
+        -16
+      ],
+      "id": "4254fc10-5bbf-405f-a76d-4685d70b2731",
+      "name": "Webhook",
+      "webhookId": "aa80f892-158a-4560-9078-0e0aff85173e"
+    },
+    {
+      "parameters": {
+        "operation": "append",
+        "documentId": {
+          "__rl": true,
+          "value": "1oNNqKUVOMjvnmM3yLepXzEj3OQYSBCZ5wNKjKs7Na9M",
+          "mode": "list",
+          "cachedResultName": "reservation_cheezious",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1oNNqKUVOMjvnmM3yLepXzEj3OQYSBCZ5wNKjKs7Na9M/edit?usp=drivesdk"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": "gid=0",
+          "mode": "list",
+          "cachedResultName": "Sheet1",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1oNNqKUVOMjvnmM3yLepXzEj3OQYSBCZ5wNKjKs7Na9M/edit#gid=0"
+        },
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "Name": "={{ $json.body.name }}",
+            "Date": "={{ $json.body.date }}",
+            "Time": "={{ $json.body.time }}",
+            "Number_Of_People": "={{ $json.body.number_of_people }}"
+          },
+          "matchingColumns": [],
+          "schema": [
+            {
+              "id": "Name",
+              "displayName": "Name",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Date",
+              "displayName": "Date",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Time",
+              "displayName": "Time",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Number_Of_People",
+              "displayName": "Number_Of_People",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": false
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.7,
+      "position": [
+        -128,
+        -16
+      ],
+      "id": "5ff4fdf4-9a17-4816-832a-4bc3d895d234",
+      "name": "Append row in sheet",
+      "credentials": {
+        "googleSheetsOAuth2Api": {
+          "id": "puDn3Bo2BH1T5y2H",
+          "name": "Google Sheets account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "respondWith": "json",
+        "responseBody": "{\n  \"staus\": \"Thanks for booking a reservation. We will see you in Cheezious.\"\n}",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1.5,
+      "position": [
+        96,
+        -16
+      ],
+      "id": "4a1dc2bc-affc-44a3-9ad1-d624465c1b92",
+      "name": "Respond to Webhook"
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "Webhook": {
+      "main": [
+        [
+          {
+            "node": "Append row in sheet",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Append row in sheet": {
+      "main": [
+        [
+          {
+            "node": "Respond to Webhook",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": false,
+  "settings": {
+    "executionOrder": "v1",
+    "binaryMode": "separate",
+    "availableInMCP": false
+  },
+  "versionId": "4d02f1af-8789-46ac-aa73-811426cf0442",
+  "meta": {
+    "templateCredsSetupCompleted": true,
+    "instanceId": "bf97ca853d23ec1cfe5d7aa44cccf6bd766f11c1cbaa7b08b5a04cd5e3aaa59b"
+  },
+  "nodeGroups": [],
+  "id": "1dCk9Q7QtBO6InD3",
+  "tags": []
+}
